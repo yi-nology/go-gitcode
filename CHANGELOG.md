@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Module path renamed from `github.com/yi-nology/gitcode_api` to `github.com/yi-nology/go-gitcode`
 - `getTestClient()` in tests now respects `GITCODE_URL` env var for private instance testing
 - README and examples updated with private deployment documentation
+- Replaced direct type assertions with `errors.As` in `Is*` error check functions
+- CI: golangci-lint now built from source (`goinstall` mode) for Go 1.26 compatibility
+- All source files formatted with `gofmt -s`
+- Removed unused `hookMu` type from hooks.go
 
 ### Deprecated
 - `NewClientFromOAuthToken()` — use `OAuthClient.NewClient()` instead to preserve base URL
