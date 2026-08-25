@@ -1,6 +1,7 @@
 package gitcode
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -94,38 +95,38 @@ type FieldError struct {
 
 // IsNotFound checks if an error is a NotFoundError.
 func IsNotFound(err error) bool {
-	_, ok := err.(*NotFoundError)
-	return ok
+	var target *NotFoundError
+	return errors.As(err, &target)
 }
 
 // IsUnauthorized checks if an error is an UnauthorizedError.
 func IsUnauthorized(err error) bool {
-	_, ok := err.(*UnauthorizedError)
-	return ok
+	var target *UnauthorizedError
+	return errors.As(err, &target)
 }
 
 // IsRateLimit checks if an error is a RateLimitError.
 func IsRateLimit(err error) bool {
-	_, ok := err.(*RateLimitError)
-	return ok
+	var target *RateLimitError
+	return errors.As(err, &target)
 }
 
 // IsConflict checks if an error is a ConflictError.
 func IsConflict(err error) bool {
-	_, ok := err.(*ConflictError)
-	return ok
+	var target *ConflictError
+	return errors.As(err, &target)
 }
 
 // IsForbidden checks if an error is a ForbiddenError.
 func IsForbidden(err error) bool {
-	_, ok := err.(*ForbiddenError)
-	return ok
+	var target *ForbiddenError
+	return errors.As(err, &target)
 }
 
 // IsValidation checks if an error is a ValidationError.
 func IsValidation(err error) bool {
-	_, ok := err.(*ValidationError)
-	return ok
+	var target *ValidationError
+	return errors.As(err, &target)
 }
 
 // newAPIError creates a structured error from an HTTP response.
