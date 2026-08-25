@@ -113,11 +113,11 @@ func TestListRepoCLAs(t *testing.T) {
 	}))
 	defer server.Close()
 
-	clas, err := client.ListRepoCLAs(context.Background(), "owner", "repo")
+	claList, err := client.ListRepoCLAs(context.Background(), "owner", "repo")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(clas) != 1 {
-		t.Errorf("expected 1 CLA, got %d", len(clas))
+	if len(claList) != 1 {
+		t.Errorf("expected 1 CLA, got %d", len(claList))
 	}
 }

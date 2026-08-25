@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"net/http"
-	"sync"
 )
 
 // RequestHook is a function called before each HTTP request.
@@ -62,9 +61,4 @@ func (c *Client) runResponseHooks(resp *http.Response) error {
 		}
 	}
 	return nil
-}
-
-// hookMu is a separate mutex type to avoid import cycle with sync.
-type hookMu struct {
-	sync.RWMutex
 }

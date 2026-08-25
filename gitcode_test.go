@@ -843,7 +843,7 @@ func TestPullRequestCRUD(t *testing.T) {
 	t.Logf("Updated PR #%d title: %s", pr.Number, prUpdated.Title)
 
 	// Close PR
-	prUpdated, err = client.ClosePullRequest(ctx, owner, repoName, pr.Number)
+	_, err = client.ClosePullRequest(ctx, owner, repoName, pr.Number)
 	if err != nil {
 		t.Fatalf("ClosePullRequest failed: %v", err)
 	}

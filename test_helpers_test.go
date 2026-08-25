@@ -30,6 +30,8 @@ func jsonResponse(statusCode int, body interface{}) http.HandlerFunc {
 }
 
 // methodRouter returns a handler that dispatches based on HTTP method.
+//
+//nolint:unused
 func methodRouter(routes map[string]http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if handler, ok := routes[r.Method]; ok {
