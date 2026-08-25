@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.7.2] - 2026-08-25
+
+### Fixed
+- CI: all source files formatted with `gofmt -s` (30 files)
+- CI: golangci-lint now built from source (`goinstall` mode) for Go 1.26 compatibility
+- Replaced direct type assertions with `errors.As` in all `Is*` error check functions (`errors.go`, `validate.go`)
+- Removed unused `hookMu` type and `sync` import from `hooks.go`
+- Suppressed false-positive lint warnings on API field names (`noteable_type`, `clas` endpoint)
+
 ## [v0.7.1] - 2026-08-25
 
 ### Added
@@ -18,10 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Module path renamed from `github.com/yi-nology/gitcode_api` to `github.com/yi-nology/go-gitcode`
 - `getTestClient()` in tests now respects `GITCODE_URL` env var for private instance testing
 - README and examples updated with private deployment documentation
-- Replaced direct type assertions with `errors.As` in `Is*` error check functions
-- CI: golangci-lint now built from source (`goinstall` mode) for Go 1.26 compatibility
-- All source files formatted with `gofmt -s`
-- Removed unused `hookMu` type from hooks.go
 
 ### Deprecated
 - `NewClientFromOAuthToken()` — use `OAuthClient.NewClient()` instead to preserve base URL
