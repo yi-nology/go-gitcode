@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.7.1] - 2026-08-25
+
+### Added
+- `SetBaseURL()` / `BaseURL()` on `Client` for runtime base URL switching
+- `NewClientFromEnv()` constructor — reads `GITCODE_URL` and `GITCODE_TOKEN` environment variables
+- `NewOAuthClientWithBaseURL()` for creating OAuth clients pointing to private instances
+- `OAuthClient.NewClient(token)` method — preserves the OAuth client's base URL (fixes lost URL bug in `NewClientFromOAuthToken`)
+- `EnvGitBaseURL` / `EnvGitToken` exported constants for environment variable names
+
+### Changed
+- Module path renamed from `github.com/yi-nology/gitcode_api` to `github.com/yi-nology/go-gitcode`
+- `getTestClient()` in tests now respects `GITCODE_URL` env var for private instance testing
+- README and examples updated with private deployment documentation
+
+### Deprecated
+- `NewClientFromOAuthToken()` — use `OAuthClient.NewClient()` instead to preserve base URL
+
 ## [v0.7.0] - 2026-08-15
 
 ### Added

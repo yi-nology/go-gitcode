@@ -35,6 +35,13 @@ func NewOAuthClient(clientID, clientSecret, redirectURI string) *OAuthClient {
 	}
 }
 
+// NewOAuthClientWithBaseURL creates an OAuthClient for a private GitCode deployment.
+func NewOAuthClientWithBaseURL(clientID, clientSecret, redirectURI, baseURL string) *OAuthClient {
+	o := NewOAuthClient(clientID, clientSecret, redirectURI)
+	o.baseURL = strings.TrimRight(baseURL, "/")
+	return o
+}
+
 func (o *OAuthClient) SetBaseURL(baseURL string) {
 	o.baseURL = strings.TrimRight(baseURL, "/")
 }
@@ -108,7 +115,14 @@ func (o *OAuthClient) doTokenRequest(ctx context.Context, data url.Values) (*OAu
 	return &token, nil
 }
 
+// NewClient creates a new API Client from an OAuthToken, preserving the OAuthClient's base URL.
+// The resulting client uses the same host as the OAuthClient, which is correct for private deployments.
+func (o *OAuthClient) NewClient(token *OAuthToken) *Client {
+	return NewClientWithBaseURL(o.baseURL+"/api/v5", token.AccessToken)
+}
+
+// Deprecated: NewClientFromOAuthToken creates a client from an OAuth token using the default public base URL.
+// For private deployments, use OAuthClient.NewClient() instead, which preserves the base URL.
 func NewClientFromOAuthToken(token *OAuthToken) *Client {
-	c := NewClient(token.AccessToken)
-	return c
+	return NewClient(token.AccessToken)
 }

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	gitcode "github.com/yi-nology/gitcode_api"
+	gitcode "github.com/yi-nology/go-gitcode"
 )
 
 func main() {
@@ -36,8 +36,15 @@ func main() {
 	// ============================================================
 	client.SetHTTPClient(&http.Client{Timeout: 60 * time.Second})
 
-	// 私有部署
+	// 私有部署 — 三种方式
+	// 方式一：构造时指定
 	// client := gitcode.NewClientWithBaseURL("https://your-gitcode.com/api/v5", "token")
+	// 方式二：构造后修改
+	// client.SetBaseURL("https://your-gitcode.com/api/v5")
+	// 方式三：环境变量 (推荐用于 CLI / CI)
+	// export GITCODE_URL="https://your-gitcode.com/api/v5"
+	// export GITCODE_TOKEN="your-token"
+	// client := gitcode.NewClientFromEnv()
 
 	// ============================================================
 	// 4. Rate Limit 重试策略

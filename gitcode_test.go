@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 )
@@ -13,6 +14,9 @@ const testToken = "1ztQWzf-iMh5HviDtYQsjWbV"
 
 func getTestClient(t *testing.T) *Client {
 	t.Helper()
+	if baseURL := os.Getenv(EnvGitBaseURL); baseURL != "" {
+		return NewClientWithBaseURL(baseURL, testToken)
+	}
 	return NewClient(testToken)
 }
 

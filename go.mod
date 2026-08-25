@@ -1,3 +1,3 @@
-module github.com/yi-nology/gitcode_api
+module github.com/yi-nology/go-gitcode
 
 go 1.26

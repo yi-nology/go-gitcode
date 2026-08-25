@@ -2,7 +2,7 @@
 
 Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对 GitCode 平台几乎所有 REST API (`/api/v5`) 的类型安全访问。
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/yi-nology/gitcode_api.svg)](https://pkg.go.dev/github.com/yi-nology/gitcode_api)
+[![Go Reference](https://pkg.go.dev/badge/github.com/yi-nology/go-gitcode.svg)](https://pkg.go.dev/github.com/yi-nology/go-gitcode)
 [![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go)](https://go.dev)
 
 ## 功能特性
@@ -50,10 +50,10 @@ Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对
 ## 安装
 
 ```bash
-go get github.com/yi-nology/gitcode_api@latest
+go get github.com/yi-nology/go-gitcode@latest
 ```
 
-当前最新版本为 `v0.6.0`,完整版本历史见 [releases](https://github.com/yi-nology/gitcode_api/releases)。
+当前最新版本为 `v0.7.1`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
 
 ## 快速开始
 
@@ -65,7 +65,7 @@ import (
     "fmt"
     "log"
 
-    gitcode "github.com/yi-nology/gitcode_api"
+    gitcode "github.com/yi-nology/go-gitcode"
 )
 
 func main() {
@@ -110,12 +110,43 @@ client.SetAuthStyle(gitcode.AuthStyleAccessToken)               // access_token 
 
 ### 私有部署 / 自定义 HTTP 客户端
 
+#### 方式一：构造时指定
+
 ```go
 client := gitcode.NewClientWithBaseURL("https://your-gitcode.com/api/v5", "token")
 client.SetHTTPClient(&http.Client{Timeout: 60 * time.Second})   // 自定义超时
 ```
 
-默认 BaseURL 为 `https://api.gitcode.com/api/v5`,默认超时 30s。
+#### 方式二：构造后修改
+
+```go
+client := gitcode.NewClient("token")
+client.SetBaseURL("https://your-gitcode.com/api/v5")            // 切换到私有实例
+fmt.Println(client.BaseURL())                                    // 查看当前 URL
+```
+
+#### 方式三：环境变量（推荐用于 CLI / CI）
+
+设置以下环境变量后，使用 `NewClientFromEnv()` 自动读取:
+
+| 环境变量 | 说明 | 示例 |
+|----------|------|------|
+| `GITCODE_URL` | 私有实例 API 地址 | `https://gitcode.example.com/api/v5` |
+| `GITCODE_TOKEN` | 认证 Token | `your-token` |
+
+```bash
+export GITCODE_URL="https://gitcode.example.com/api/v5"
+export GITCODE_TOKEN="your-token"
+```
+
+```go
+client := gitcode.NewClientFromEnv()  // 自动读取环境变量
+if client == nil {
+    log.Fatal("请设置 GITCODE_TOKEN 环境变量")
+}
+```
+
+优先级: **显式参数 > 环境变量 > 默认值** (`https://api.gitcode.com/api/v5`)。
 
 ### OAuth 2.0
 
@@ -132,10 +163,24 @@ http.Redirect(w, r, url, http.StatusFound)
 token, err := oauth.ExchangeToken(ctx, code)
 
 // 3. 用 token 创建 API 客户端
-client := gitcode.NewClientFromOAuthToken(token)
+client := oauth.NewClient(token)  // 推荐：保留 OAuth 客户端的 base URL
 
 // 4. 后续可用 refresh token 续期
 token, err = oauth.RefreshToken(ctx, token.RefreshToken)
+```
+
+#### OAuth 私有部署
+
+```go
+// 指定私有实例地址
+oauth := gitcode.NewOAuthClientWithBaseURL(
+    "client-id", "client-secret",
+    "https://app.example.com/callback",
+    "https://gitcode.example.com",  // 私有实例地址
+)
+
+// 后续流程与上面相同，oauth.NewClient(token) 会自动使用私有实例的 API 地址
+client := oauth.NewClient(token)
 ```
 
 ## API 示例

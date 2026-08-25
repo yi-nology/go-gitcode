@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -15,6 +16,13 @@ import (
 
 const (
 	DefaultBaseURL = "https://api.gitcode.com/api/v5"
+
+	// EnvGitBaseURL is the environment variable for a custom GitCode API base URL.
+	// Set this to your private instance URL (e.g. "https://gitcode.example.com/api/v5").
+	EnvGitBaseURL = "GITCODE_URL"
+
+	// EnvGitToken is the environment variable for the GitCode API token.
+	EnvGitToken = "GITCODE_TOKEN"
 )
 
 // Client is the GitCode API client.
@@ -69,6 +77,22 @@ func NewClientWithBaseURL(baseURL, token string) *Client {
 	}
 }
 
+// NewClientFromEnv creates a client from GITCODE_TOKEN and optionally GITCODE_URL
+// environment variables. Returns nil if GITCODE_TOKEN is not set.
+//
+// This is the recommended way to create a client for CLI tools and scripts that
+// support both public and private GitCode instances via environment configuration.
+func NewClientFromEnv() *Client {
+	token := os.Getenv(EnvGitToken)
+	if token == "" {
+		return nil
+	}
+	if baseURL := os.Getenv(EnvGitBaseURL); baseURL != "" {
+		return NewClientWithBaseURL(baseURL, token)
+	}
+	return NewClient(token)
+}
+
 // SetAuthStyle sets the authentication style for the client.
 func (c *Client) SetAuthStyle(style AuthStyle) {
 	c.mu.Lock()
@@ -81,6 +105,21 @@ func (c *Client) SetHTTPClient(client *http.Client) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.httpClient = client
+}
+
+// SetBaseURL sets a custom base URL for the client.
+// This is useful for switching to a private GitCode deployment after construction.
+func (c *Client) SetBaseURL(baseURL string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.baseURL = strings.TrimRight(baseURL, "/")
+}
+
+// BaseURL returns the current base URL of the client.
+func (c *Client) BaseURL() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.baseURL
 }
 
 // setAuthHeader sets the authentication header on the request.
