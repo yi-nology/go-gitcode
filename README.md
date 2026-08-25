@@ -53,7 +53,7 @@ Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对
 go get github.com/yi-nology/go-gitcode@latest
 ```
 
-当前最新版本为 `v0.7.1`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
+当前最新版本为 `v0.7.2`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
 
 ## 快速开始
 
