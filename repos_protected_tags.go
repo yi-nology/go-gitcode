@@ -9,16 +9,16 @@ import (
 
 // ProtectedTag represents a protected tag rule.
 type ProtectedTag struct {
-	ID            int64     `json:"id"`
-	NamePattern   string    `json:"name_pattern"`
-	Owners        []*User   `json:"owners,omitempty"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID          int64     `json:"id"`
+	NamePattern string    `json:"name_pattern"`
+	Owners      []*User   `json:"owners,omitempty"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // CreateProtectedTagOptions specifies options for creating a protected tag.
 type CreateProtectedTagOptions struct {
-	NamePattern string  `json:"name_pattern"`
+	NamePattern string   `json:"name_pattern"`
 	Owners      []string `json:"owners,omitempty"`
 }
 

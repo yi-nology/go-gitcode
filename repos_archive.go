@@ -82,9 +82,9 @@ func (c *Client) GetRepoCodeFrequency(ctx context.Context, owner, repo string) (
 
 // CommitActivity represents weekly commit activity.
 type CommitActivity struct {
-	Days       []int `json:"days"`        // Sun-Sat
-	Total      int   `json:"total"`
-	Week       int64 `json:"week"`        // Unix timestamp
+	Days  []int `json:"days"` // Sun-Sat
+	Total int   `json:"total"`
+	Week  int64 `json:"week"` // Unix timestamp
 }
 
 // GetRepoCommitActivity returns a weekly aggregate of the number of commits.

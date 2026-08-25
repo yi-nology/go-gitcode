@@ -76,13 +76,13 @@ func (c *Client) ListPullRequestAvailableReviewers(ctx context.Context, owner, r
 
 // PRDiscussionComment represents a reply to a PR review comment.
 type PRDiscussionComment struct {
-	ID            int64     `json:"id"`
-	Body          string    `json:"body"`
-	User          *User     `json:"user"`
-	Author        *User     `json:"author"`
-	DiscussionID  string    `json:"discussion_id,omitempty"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID           int64     `json:"id"`
+	Body         string    `json:"body"`
+	User         *User     `json:"user"`
+	Author       *User     `json:"author"`
+	DiscussionID string    `json:"discussion_id,omitempty"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 // ReplyPullRequestComment replies to a pull request review comment.
@@ -169,16 +169,16 @@ func (c *Client) RefreshPullRequestCommentPosition(ctx context.Context, owner, r
 
 // PullRequestFileChange represents a file change in a pull request (JSON format).
 type PullRequestFileChange struct {
-	Filename        string `json:"filename"`
+	Filename         string `json:"filename"`
 	PreviousFilename string `json:"previous_filename,omitempty"`
-	Status          string `json:"status"`
-	Additions       int    `json:"additions"`
-	Deletions       int    `json:"deletions"`
-	Changes         int    `json:"changes"`
-	BlobURL         string `json:"blob_url,omitempty"`
-	RawURL          string `json:"raw_url,omitempty"`
-	ContentsURL     string `json:"contents_url,omitempty"`
-	Patch           string `json:"patch,omitempty"`
+	Status           string `json:"status"`
+	Additions        int    `json:"additions"`
+	Deletions        int    `json:"deletions"`
+	Changes          int    `json:"changes"`
+	BlobURL          string `json:"blob_url,omitempty"`
+	RawURL           string `json:"raw_url,omitempty"`
+	ContentsURL      string `json:"contents_url,omitempty"`
+	Patch            string `json:"patch,omitempty"`
 }
 
 // ListPullRequestFilesJSON lists files changed in a pull request in JSON format.

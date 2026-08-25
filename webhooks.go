@@ -90,11 +90,11 @@ type WebhookEvent struct {
 }
 
 type PullRequestWebhookEvent struct {
-	Action      string        `json:"action"`
-	Number      int           `json:"number"`
-	PullRequest *PullRequest  `json:"pull_request"`
-	Repository  *Repository   `json:"repository"`
-	Sender      *User         `json:"sender"`
+	Action      string       `json:"action"`
+	Number      int          `json:"number"`
+	PullRequest *PullRequest `json:"pull_request"`
+	Repository  *Repository  `json:"repository"`
+	Sender      *User        `json:"sender"`
 }
 
 type IssueWebhookEvent struct {

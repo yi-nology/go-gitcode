@@ -18,27 +18,27 @@ const (
 )
 
 type PullRequest struct {
-	ID           int64            `json:"id"`
-	Number       int              `json:"number"`
-	IID          int              `json:"iid,omitempty"`
-	Title        string           `json:"title"`
-	Body         string           `json:"body"`
-	Description  string           `json:"description,omitempty"`
-	State        PullRequestState `json:"state"`
-	User         *User            `json:"user"`
-	Author       *User            `json:"author"`
-	Head         *PullRequestBranch `json:"head"`
-	Base         *PullRequestBranch `json:"base"`
-	Merged       bool             `json:"merged"`
-	Mergeable    *bool            `json:"mergeable"`
-	HTMLURL      string           `json:"html_url"`
-	DiffURL      string           `json:"diff_url,omitempty"`
-	PatchURL     string           `json:"patch_url,omitempty"`
-	Draft        bool             `json:"draft,omitempty"`
-	CreatedAt    time.Time    `json:"created_at"`
-	UpdatedAt    time.Time    `json:"updated_at"`
-	ClosedAt     NullableTime `json:"closed_at,omitempty"`
-	MergedAt     NullableTime `json:"merged_at,omitempty"`
+	ID          int64              `json:"id"`
+	Number      int                `json:"number"`
+	IID         int                `json:"iid,omitempty"`
+	Title       string             `json:"title"`
+	Body        string             `json:"body"`
+	Description string             `json:"description,omitempty"`
+	State       PullRequestState   `json:"state"`
+	User        *User              `json:"user"`
+	Author      *User              `json:"author"`
+	Head        *PullRequestBranch `json:"head"`
+	Base        *PullRequestBranch `json:"base"`
+	Merged      bool               `json:"merged"`
+	Mergeable   *bool              `json:"mergeable"`
+	HTMLURL     string             `json:"html_url"`
+	DiffURL     string             `json:"diff_url,omitempty"`
+	PatchURL    string             `json:"patch_url,omitempty"`
+	Draft       bool               `json:"draft,omitempty"`
+	CreatedAt   time.Time          `json:"created_at"`
+	UpdatedAt   time.Time          `json:"updated_at"`
+	ClosedAt    NullableTime       `json:"closed_at,omitempty"`
+	MergedAt    NullableTime       `json:"merged_at,omitempty"`
 }
 
 type PullRequestBranch struct {
@@ -53,13 +53,13 @@ type PullRequestBranch struct {
 }
 
 type PullRequestFile struct {
-	Filename        string      `json:"filename"`
-	PreviousFilename string     `json:"previous_filename,omitempty"`
-	Status          string      `json:"status"`
-	Additions       int         `json:"additions"`
-	Deletions       int         `json:"deletions"`
-	Changes         int         `json:"changes"`
-	Patch           interface{} `json:"patch,omitempty"`
+	Filename         string      `json:"filename"`
+	PreviousFilename string      `json:"previous_filename,omitempty"`
+	Status           string      `json:"status"`
+	Additions        int         `json:"additions"`
+	Deletions        int         `json:"deletions"`
+	Changes          int         `json:"changes"`
+	Patch            interface{} `json:"patch,omitempty"`
 }
 
 type PullRequestComment struct {
@@ -97,27 +97,27 @@ type PullRequestReview struct {
 
 type ListPullRequestsOptions struct {
 	ListOptions
-	State        PullRequestState `json:"state,omitempty"`
-	Sort         string           `json:"sort,omitempty"`
-	Direction    string           `json:"direction,omitempty"`
-	Head         string           `json:"head,omitempty"`
-	Base         string           `json:"base,omitempty"`
+	State     PullRequestState `json:"state,omitempty"`
+	Sort      string           `json:"sort,omitempty"`
+	Direction string           `json:"direction,omitempty"`
+	Head      string           `json:"head,omitempty"`
+	Base      string           `json:"base,omitempty"`
 }
 
 type CreatePullRequestOptions struct {
-	Title     string `json:"title"`
-	Body      string `json:"body,omitempty"`
-	Head      string `json:"head"`
-	Base      string `json:"base"`
-	Draft     bool   `json:"draft,omitempty"`
+	Title string `json:"title"`
+	Body  string `json:"body,omitempty"`
+	Head  string `json:"head"`
+	Base  string `json:"base"`
+	Draft bool   `json:"draft,omitempty"`
 }
 
 type UpdatePullRequestOptions struct {
-	Title      string          `json:"title,omitempty"`
-	Body       string          `json:"body,omitempty"`
+	Title      string           `json:"title,omitempty"`
+	Body       string           `json:"body,omitempty"`
 	State      PullRequestState `json:"state,omitempty"`
-	StateEvent string          `json:"state_event,omitempty"`
-	Base       string          `json:"base,omitempty"`
+	StateEvent string           `json:"state_event,omitempty"`
+	Base       string           `json:"base,omitempty"`
 }
 
 func (c *Client) ListPullRequests(ctx context.Context, owner, repo string, opts ListPullRequestsOptions) ([]*PullRequest, error) {

@@ -9,18 +9,18 @@ import (
 
 // OrgWebhook represents an organization webhook.
 type OrgWebhook struct {
-	ID              int64     `json:"id"`
-	URL             string    `json:"url"`
-	Events          []string  `json:"events"`
-	Active          bool      `json:"active"`
-	Config          *WebhookConfig `json:"config,omitempty"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
-	PushEvents      bool      `json:"push_events"`
-	TagPushEvents   bool      `json:"tag_push_events"`
-	IssuesEvents    bool      `json:"issues_events"`
-	NoteEvents      bool      `json:"note_events"`
-	MergeRequestsEvents bool `json:"merge_requests_events"`
+	ID                  int64          `json:"id"`
+	URL                 string         `json:"url"`
+	Events              []string       `json:"events"`
+	Active              bool           `json:"active"`
+	Config              *WebhookConfig `json:"config,omitempty"`
+	CreatedAt           time.Time      `json:"created_at"`
+	UpdatedAt           time.Time      `json:"updated_at"`
+	PushEvents          bool           `json:"push_events"`
+	TagPushEvents       bool           `json:"tag_push_events"`
+	IssuesEvents        bool           `json:"issues_events"`
+	NoteEvents          bool           `json:"note_events"`
+	MergeRequestsEvents bool           `json:"merge_requests_events"`
 }
 
 // WebhookConfig represents the configuration of a webhook.
@@ -33,20 +33,20 @@ type WebhookConfig struct {
 
 // CreateOrgWebhookOptions specifies options for creating an organization webhook.
 type CreateOrgWebhookOptions struct {
-	URL     string          `json:"url"`
-	Secret  string          `json:"secret,omitempty"`
-	Events  []string        `json:"events,omitempty"`
-	Active  *bool           `json:"active,omitempty"`
-	Config  *WebhookConfig  `json:"config,omitempty"`
+	URL    string         `json:"url"`
+	Secret string         `json:"secret,omitempty"`
+	Events []string       `json:"events,omitempty"`
+	Active *bool          `json:"active,omitempty"`
+	Config *WebhookConfig `json:"config,omitempty"`
 }
 
 // UpdateOrgWebhookOptions specifies options for updating an organization webhook.
 type UpdateOrgWebhookOptions struct {
-	URL     string          `json:"url,omitempty"`
-	Secret  string          `json:"secret,omitempty"`
-	Events  []string        `json:"events,omitempty"`
-	Active  *bool           `json:"active,omitempty"`
-	Config  *WebhookConfig  `json:"config,omitempty"`
+	URL    string         `json:"url,omitempty"`
+	Secret string         `json:"secret,omitempty"`
+	Events []string       `json:"events,omitempty"`
+	Active *bool          `json:"active,omitempty"`
+	Config *WebhookConfig `json:"config,omitempty"`
 }
 
 // ListOrgWebhooks lists all webhooks of an organization.

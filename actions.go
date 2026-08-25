@@ -108,25 +108,25 @@ func (c *Client) RunActionWorkflow(ctx context.Context, owner, repo string, opts
 
 // ActionJob represents a workflow job.
 type ActionJob struct {
-	ID          int64     `json:"id"`
-	RunID       int64     `json:"run_id"`
-	Name        string    `json:"name"`
-	Status      string    `json:"status"`
-	Conclusion  string    `json:"conclusion,omitempty"`
-	StartedAt   time.Time `json:"started_at"`
-	CompletedAt *time.Time `json:"completed_at,omitempty"`
-	RunnerID    int64     `json:"runner_id,omitempty"`
-	RunnerName  string    `json:"runner_name,omitempty"`
+	ID          int64         `json:"id"`
+	RunID       int64         `json:"run_id"`
+	Name        string        `json:"name"`
+	Status      string        `json:"status"`
+	Conclusion  string        `json:"conclusion,omitempty"`
+	StartedAt   time.Time     `json:"started_at"`
+	CompletedAt *time.Time    `json:"completed_at,omitempty"`
+	RunnerID    int64         `json:"runner_id,omitempty"`
+	RunnerName  string        `json:"runner_name,omitempty"`
 	Steps       []*ActionStep `json:"steps,omitempty"`
 }
 
 // ActionStep represents a step in a workflow job.
 type ActionStep struct {
-	Name       string    `json:"name"`
-	Status     string    `json:"status"`
-	Conclusion string    `json:"conclusion,omitempty"`
-	Number     int       `json:"number"`
-	StartedAt  time.Time `json:"started_at,omitempty"`
+	Name        string     `json:"name"`
+	Status      string     `json:"status"`
+	Conclusion  string     `json:"conclusion,omitempty"`
+	Number      int        `json:"number"`
+	StartedAt   time.Time  `json:"started_at,omitempty"`
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
 }
 
@@ -174,14 +174,14 @@ func (c *Client) GetActionJobStepLogs(ctx context.Context, owner, repo string, j
 
 // ActionArtifact represents a workflow artifact.
 type ActionArtifact struct {
-	ID          int64     `json:"id"`
-	Name        string    `json:"name"`
-	Size        int64     `json:"size"`
-	ArchiveURL  string    `json:"archive_download_url,omitempty"`
-	Expired     bool      `json:"expired"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	RunID       int64     `json:"run_id,omitempty"`
+	ID         int64     `json:"id"`
+	Name       string    `json:"name"`
+	Size       int64     `json:"size"`
+	ArchiveURL string    `json:"archive_download_url,omitempty"`
+	Expired    bool      `json:"expired"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	RunID      int64     `json:"run_id,omitempty"`
 }
 
 // ListActionArtifacts lists all artifacts for a repository.
@@ -247,13 +247,13 @@ func (c *Client) ValidateWorkflowYAML(ctx context.Context, owner, repo string, y
 
 // ActionRunner represents a CI/CD runner.
 type ActionRunner struct {
-	ID        int64  `json:"id"`
-	Name      string `json:"name"`
-	Status    string `json:"status"`
-	OS        string `json:"os,omitempty"`
-	Arch      string `json:"arch,omitempty"`
-	Labels    []string `json:"labels,omitempty"`
-	RunnerType string `json:"runner_type,omitempty"`
+	ID         int64    `json:"id"`
+	Name       string   `json:"name"`
+	Status     string   `json:"status"`
+	OS         string   `json:"os,omitempty"`
+	Arch       string   `json:"arch,omitempty"`
+	Labels     []string `json:"labels,omitempty"`
+	RunnerType string   `json:"runner_type,omitempty"`
 }
 
 // ListRepoHostRunners lists all host runners for a repository.

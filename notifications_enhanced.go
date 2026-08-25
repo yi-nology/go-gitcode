@@ -9,13 +9,13 @@ import (
 
 // NotificationThread represents a detailed notification thread.
 type NotificationThread struct {
-	ID        int64     `json:"id"`
-	Unread    bool      `json:"unread"`
-	Pinned    bool      `json:"pinned,omitempty"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Subject   *NotificationSubject `json:"subject"`
-	Repository *Repository `json:"repository"`
-	URL       string    `json:"url"`
+	ID         int64                `json:"id"`
+	Unread     bool                 `json:"unread"`
+	Pinned     bool                 `json:"pinned,omitempty"`
+	UpdatedAt  time.Time            `json:"updated_at"`
+	Subject    *NotificationSubject `json:"subject"`
+	Repository *Repository          `json:"repository"`
+	URL        string               `json:"url"`
 }
 
 // NotificationSubject represents the subject of a notification.
@@ -29,10 +29,10 @@ type NotificationSubject struct {
 // ListNotificationsOptions specifies options for listing notifications.
 type ListNotificationsOptions struct {
 	ListOptions
-	All     bool   `json:"all,omitempty"`     // Include read notifications
-	Since   string `json:"since,omitempty"`   // Only notifications updated after this time
-	Before  string `json:"before,omitempty"`  // Only notifications updated before this time
-	Status  string `json:"status,omitempty"`  // unread, read, pinned
+	All    bool   `json:"all,omitempty"`    // Include read notifications
+	Since  string `json:"since,omitempty"`  // Only notifications updated after this time
+	Before string `json:"before,omitempty"` // Only notifications updated before this time
+	Status string `json:"status,omitempty"` // unread, read, pinned
 }
 
 // MarkNotificationsOptions specifies options for marking notifications.

@@ -180,11 +180,11 @@ func (c *Client) ListEnterpriseMilestoneRepos(ctx context.Context, enterprise st
 
 // IssueCustomField represents a custom field for enterprise issues.
 type IssueCustomField struct {
-	ID        int64  `json:"id"`
-	Name      string `json:"name"`
-	Type      string `json:"type"`
-	Required  bool   `json:"required"`
-	Options   []struct {
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	Required bool   `json:"required"`
+	Options  []struct {
 		ID   int64  `json:"id"`
 		Name string `json:"name"`
 	} `json:"options,omitempty"`

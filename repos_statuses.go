@@ -11,7 +11,7 @@ import (
 type CommitStatus struct {
 	ID          int64     `json:"id"`
 	SHA         string    `json:"sha"`
-	State       string    `json:"state"`       // pending, success, error, failure
+	State       string    `json:"state"` // pending, success, error, failure
 	TargetURL   string    `json:"target_url"`
 	Description string    `json:"description"`
 	Context     string    `json:"context"`
@@ -22,7 +22,7 @@ type CommitStatus struct {
 
 // CreateCommitStatusOptions specifies options for creating a commit status.
 type CreateCommitStatusOptions struct {
-	State       string `json:"state"`                 // pending, success, error, failure
+	State       string `json:"state"` // pending, success, error, failure
 	TargetURL   string `json:"target_url,omitempty"`
 	Description string `json:"description,omitempty"`
 	Context     string `json:"context,omitempty"`
@@ -30,12 +30,12 @@ type CreateCommitStatusOptions struct {
 
 // CombinedStatus represents the combined status for a commit.
 type CombinedStatus struct {
-	SHA      string          `json:"sha"`
-	TotalCount int           `json:"total_count"`
-	Statuses []*CommitStatus `json:"statuses"`
-	Repository *Repository   `json:"repository"`
-	CommitURL string         `json:"commit_url"`
-	URL      string          `json:"url"`
+	SHA        string          `json:"sha"`
+	TotalCount int             `json:"total_count"`
+	Statuses   []*CommitStatus `json:"statuses"`
+	Repository *Repository     `json:"repository"`
+	CommitURL  string          `json:"commit_url"`
+	URL        string          `json:"url"`
 }
 
 // ListCommitStatuses lists all statuses for a commit.

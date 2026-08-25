@@ -17,14 +17,14 @@ type Reaction struct {
 
 // ReactionContent constants for reaction types.
 const (
-	ReactionPlusOne     = "+1"
-	ReactionMinusOne    = "-1"
-	ReactionLaugh       = "laugh"
-	ReactionConfused    = "confused"
-	ReactionHeart       = "heart"
-	ReactionHooray      = "hooray"
-	ReactionRocket      = "rocket"
-	ReactionEyes        = "eyes"
+	ReactionPlusOne  = "+1"
+	ReactionMinusOne = "-1"
+	ReactionLaugh    = "laugh"
+	ReactionConfused = "confused"
+	ReactionHeart    = "heart"
+	ReactionHooray   = "hooray"
+	ReactionRocket   = "rocket"
+	ReactionEyes     = "eyes"
 )
 
 // CreateReactionOptions specifies options for creating a reaction.

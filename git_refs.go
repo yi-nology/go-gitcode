@@ -8,8 +8,8 @@ import (
 
 // GitReference represents a git reference.
 type GitReference struct {
-	Ref string `json:"ref"`
-	URL string `json:"url"`
+	Ref    string     `json:"ref"`
+	URL    string     `json:"url"`
 	Object *GitObject `json:"object"`
 }
 

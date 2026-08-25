@@ -9,16 +9,16 @@ import (
 
 // IssueTimelineEvent represents an event in an issue's timeline.
 type IssueTimelineEvent struct {
-	ID        int64     `json:"id"`
-	Action    string    `json:"action"`
-	Body      string    `json:"body,omitempty"`
-	User      *User     `json:"user"`
-	Author    *User     `json:"author"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	CommitID  string    `json:"commit_id,omitempty"`
-	EventType string    `json:"event,omitempty"`
-	Label     *Label    `json:"label,omitempty"`
+	ID        int64      `json:"id"`
+	Action    string     `json:"action"`
+	Body      string     `json:"body,omitempty"`
+	User      *User      `json:"user"`
+	Author    *User      `json:"author"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	CommitID  string     `json:"commit_id,omitempty"`
+	EventType string     `json:"event,omitempty"`
+	Label     *Label     `json:"label,omitempty"`
 	Milestone *Milestone `json:"milestone,omitempty"`
 	Rename    *struct {
 		From string `json:"from"`
@@ -74,7 +74,7 @@ func (c *Client) UnsubscribeFromIssue(ctx context.Context, owner, repo string, n
 
 // IssueDependency represents a dependency between issues.
 type IssueDependency struct {
-	ID    int64 `json:"id"`
+	ID    int64  `json:"id"`
 	Issue *Issue `json:"issue"`
 }
 

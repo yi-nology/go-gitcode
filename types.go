@@ -104,19 +104,19 @@ func (e *Error) Error() string {
 
 type SearchOptions struct {
 	ListOptions
-	Query  string `json:"q"`
-	Order  string `json:"order,omitempty"`
+	Query string `json:"q"`
+	Order string `json:"order,omitempty"`
 }
 
 type SearchResult struct {
-	TotalCount int `json:"total_count"`
+	TotalCount int           `json:"total_count"`
 	Items      []*Repository `json:"items"`
 }
 
 type Notification struct {
-	ID     string `json:"id"`
-	Reason string `json:"reason"`
-	Unread bool   `json:"unread"`
+	ID      string `json:"id"`
+	Reason  string `json:"reason"`
+	Unread  bool   `json:"unread"`
 	Subject struct {
 		Title string `json:"title"`
 		URL   string `json:"url"`
@@ -130,9 +130,9 @@ type Star struct {
 }
 
 type Member struct {
-	ID       string `json:"id"`
-	Login    string `json:"login"`
-	Role     string `json:"role"`
+	ID    string `json:"id"`
+	Login string `json:"login"`
+	Role  string `json:"role"`
 }
 
 type Organization struct {

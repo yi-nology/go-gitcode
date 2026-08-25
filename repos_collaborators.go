@@ -8,11 +8,11 @@ import (
 
 // Collaborator represents a repository collaborator.
 type Collaborator struct {
-	ID        int64  `json:"id"`
-	Login     string `json:"login"`
-	Name      string `json:"name"`
-	AvatarURL string `json:"avatar_url"`
-	HTMLURL   string `json:"html_url"`
+	ID         int64  `json:"id"`
+	Login      string `json:"login"`
+	Name       string `json:"name"`
+	AvatarURL  string `json:"avatar_url"`
+	HTMLURL    string `json:"html_url"`
 	Permission string `json:"permission,omitempty"`
 }
 

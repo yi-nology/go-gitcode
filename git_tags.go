@@ -9,12 +9,12 @@ import (
 
 // AnnotatedTag represents an annotated git tag.
 type AnnotatedTag struct {
-	SHA     string         `json:"sha"`
-	URL     string         `json:"url"`
-	Tag     string         `json:"tag"`
-	Message string         `json:"message"`
-	Object  *GitObject     `json:"object"`
-	Tagger  *CommitAuthor  `json:"tagger"`
+	SHA     string        `json:"sha"`
+	URL     string        `json:"url"`
+	Tag     string        `json:"tag"`
+	Message string        `json:"message"`
+	Object  *GitObject    `json:"object"`
+	Tagger  *CommitAuthor `json:"tagger"`
 }
 
 // CreateAnnotatedTagOptions specifies options for creating an annotated tag.
@@ -56,9 +56,9 @@ func (c *Client) CreateAnnotatedTag(ctx context.Context, owner, repo string, opt
 
 // TagWithRelease represents a tag with its associated release info.
 type TagWithRelease struct {
-	Name       string    `json:"name"`
-	Message    string    `json:"message,omitempty"`
-	Commit     *struct {
+	Name    string `json:"name"`
+	Message string `json:"message,omitempty"`
+	Commit  *struct {
 		SHA string `json:"sha"`
 		URL string `json:"url"`
 	} `json:"commit"`

@@ -75,26 +75,26 @@ func (c *Client) SearchRepositories(ctx context.Context, opts SearchRepositories
 
 type SearchIssuesOptions struct {
 	ListOptions
-	Query  string `json:"q"`
-	Sort   string `json:"sort,omitempty"`
-	Order  string `json:"order,omitempty"`
-	Repo   string `json:"repo,omitempty"`
-	State  string `json:"state,omitempty"`
+	Query string `json:"q"`
+	Sort  string `json:"sort,omitempty"`
+	Order string `json:"order,omitempty"`
+	Repo  string `json:"repo,omitempty"`
+	State string `json:"state,omitempty"`
 }
 
 type SearchIssueResult struct {
-	ID          int64     `json:"id"`
-	HTMLURL     string    `json:"html_url"`
-	Number      string    `json:"number"`
-	State       string    `json:"state"`
-	Title       string    `json:"title"`
-	Body        string    `json:"body"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Labels      []*Label  `json:"labels"`
-	Priority    int       `json:"priority"`
-	Comments    int       `json:"comments"`
-	Repository  *struct {
+	ID         int64     `json:"id"`
+	HTMLURL    string    `json:"html_url"`
+	Number     string    `json:"number"`
+	State      string    `json:"state"`
+	Title      string    `json:"title"`
+	Body       string    `json:"body"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	Labels     []*Label  `json:"labels"`
+	Priority   int       `json:"priority"`
+	Comments   int       `json:"comments"`
+	Repository *struct {
 		ID        int64  `json:"id"`
 		FullName  string `json:"full_name"`
 		HumanName string `json:"human_name"`

@@ -8,12 +8,12 @@ import (
 
 // WikiPage represents a wiki page.
 type WikiPage struct {
-	Title    string   `json:"title"`
-	Content  string   `json:"content,omitempty"`
-	HTMLURL  string   `json:"html_url,omitempty"`
-	CommitSHA string  `json:"commit_sha,omitempty"`
-	Sidebar  string   `json:"sidebar,omitempty"`
-	Footer   string   `json:"footer,omitempty"`
+	Title      string `json:"title"`
+	Content    string `json:"content,omitempty"`
+	HTMLURL    string `json:"html_url,omitempty"`
+	CommitSHA  string `json:"commit_sha,omitempty"`
+	Sidebar    string `json:"sidebar,omitempty"`
+	Footer     string `json:"footer,omitempty"`
 	LastCommit *struct {
 		SHA     string `json:"sha"`
 		Message string `json:"message"`

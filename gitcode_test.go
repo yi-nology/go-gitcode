@@ -367,7 +367,7 @@ func TestBranchOperations(t *testing.T) {
 	branchName := generateBranchName()
 	branch, err := client.CreateBranch(ctx, owner, repoName, CreateBranchOptions{
 		BranchName: branchName,
-		Refs:        defaultBranch,
+		Refs:       defaultBranch,
 	})
 	if err != nil {
 		t.Fatalf("CreateBranch failed: %v", err)
@@ -1272,7 +1272,7 @@ func TestMergePullRequest(t *testing.T) {
 	branchName := generateBranchName()
 	_, err = client.CreateBranch(ctx, owner, repoName, CreateBranchOptions{
 		BranchName: branchName,
-		Refs:        defaultBranch,
+		Refs:       defaultBranch,
 	})
 	if err != nil {
 		t.Fatalf("CreateBranch failed: %v", err)

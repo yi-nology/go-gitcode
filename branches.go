@@ -40,11 +40,11 @@ type CommitAuthor struct {
 }
 
 type BranchProtection struct {
-	Enabled                bool `json:"enabled"`
-	RequiredStatusChecks   bool `json:"required_status_checks"`
-	RequiredApprovingReviews int `json:"required_approving_reviews"`
-	AllowForcePushes       bool `json:"allow_force_pushes"`
-	AllowDeletions         bool `json:"allow_deletions"`
+	Enabled                  bool `json:"enabled"`
+	RequiredStatusChecks     bool `json:"required_status_checks"`
+	RequiredApprovingReviews int  `json:"required_approving_reviews"`
+	AllowForcePushes         bool `json:"allow_force_pushes"`
+	AllowDeletions           bool `json:"allow_deletions"`
 }
 
 func (c *Client) ListBranches(ctx context.Context, owner, repo string) ([]*Branch, error) {
@@ -89,13 +89,13 @@ type ListBranchProtectionOptions struct {
 }
 
 type BranchProtectionRule struct {
-	ID                    int64  `json:"id"`
-	RepositoryID          int64  `json:"repository_id"`
-	Name                  string `json:"name"`
-	RequiredStatusChecks  bool   `json:"required_status_checks"`
-	RequiredApprovingReviews int `json:"required_approving_reviews"`
-	AllowForcePushes      bool   `json:"allow_force_pushes"`
-	AllowDeletions        bool   `json:"allow_deletions"`
+	ID                       int64  `json:"id"`
+	RepositoryID             int64  `json:"repository_id"`
+	Name                     string `json:"name"`
+	RequiredStatusChecks     bool   `json:"required_status_checks"`
+	RequiredApprovingReviews int    `json:"required_approving_reviews"`
+	AllowForcePushes         bool   `json:"allow_force_pushes"`
+	AllowDeletions           bool   `json:"allow_deletions"`
 }
 
 func (c *Client) ListBranchProtections(ctx context.Context, owner, repo string) ([]*BranchProtectionRule, error) {
@@ -108,11 +108,11 @@ func (c *Client) ListBranchProtections(ctx context.Context, owner, repo string) 
 }
 
 type CreateBranchProtectionOptions struct {
-	Name                   string `json:"name"`
-	RequiredStatusChecks   bool   `json:"required_status_checks"`
-	RequiredApprovingReviews int  `json:"required_approving_reviews"`
-	AllowForcePushes       bool   `json:"allow_force_pushes"`
-	AllowDeletions         bool   `json:"allow_deletions"`
+	Name                     string `json:"name"`
+	RequiredStatusChecks     bool   `json:"required_status_checks"`
+	RequiredApprovingReviews int    `json:"required_approving_reviews"`
+	AllowForcePushes         bool   `json:"allow_force_pushes"`
+	AllowDeletions           bool   `json:"allow_deletions"`
 }
 
 func (c *Client) CreateBranchProtection(ctx context.Context, owner, repo string, opts CreateBranchProtectionOptions) (*BranchProtectionRule, error) {
@@ -129,10 +129,10 @@ func (c *Client) DeleteBranchProtection(ctx context.Context, owner, repo, name s
 }
 
 type CommitComparison struct {
-	TotalCommits int        `json:"total_commits"`
-	AheadBy      int        `json:"ahead_by"`
-	BehindBy     int        `json:"behind_by"`
-	Commits      []*Commit  `json:"commits"`
+	TotalCommits int                `json:"total_commits"`
+	AheadBy      int                `json:"ahead_by"`
+	BehindBy     int                `json:"behind_by"`
+	Commits      []*Commit          `json:"commits"`
 	Files        []*PullRequestFile `json:"files"`
 }
 

@@ -47,7 +47,7 @@ func TestCreateCommitStatus(t *testing.T) {
 
 func TestGetCombinedStatus(t *testing.T) {
 	client, server := newTestServer(jsonResponse(200, &CombinedStatus{
-		SHA:       "abc123",
+		SHA:        "abc123",
 		TotalCount: 2,
 		Statuses: []*CommitStatus{
 			{State: "success", Context: "ci/build"},

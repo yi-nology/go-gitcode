@@ -38,10 +38,10 @@ func (c *Client) SetIssueRelatedBranches(ctx context.Context, owner, repo string
 
 // KanbanValue represents a kanban field value for an issue.
 type KanbanValue struct {
-	FieldID    int64  `json:"field_id"`
-	FieldName  string `json:"field_name"`
-	ValueID    int64  `json:"value_id"`
-	ValueName  string `json:"value_name"`
+	FieldID   int64  `json:"field_id"`
+	FieldName string `json:"field_name"`
+	ValueID   int64  `json:"value_id"`
+	ValueName string `json:"value_name"`
 }
 
 // UpdateIssueKanbanValues updates the kanban field values of an issue.
@@ -55,14 +55,14 @@ func (c *Client) UpdateIssueKanbanValues(ctx context.Context, owner, repo string
 
 // ModifyHistoryEntry represents a modification history entry.
 type ModifyHistoryEntry struct {
-	ID         int64     `json:"id"`
-	Action     string    `json:"action"`
-	Field      string    `json:"field,omitempty"`
-	OldValue   string    `json:"old_value,omitempty"`
-	NewValue   string    `json:"new_value,omitempty"`
-	User       *User     `json:"user"`
-	Author     *User     `json:"author"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID        int64     `json:"id"`
+	Action    string    `json:"action"`
+	Field     string    `json:"field,omitempty"`
+	OldValue  string    `json:"old_value,omitempty"`
+	NewValue  string    `json:"new_value,omitempty"`
+	User      *User     `json:"user"`
+	Author    *User     `json:"author"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // ListIssueModifyHistory lists the modification history of an issue.

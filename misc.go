@@ -34,8 +34,8 @@ func (c *Client) GetGitignoreTemplate(ctx context.Context, name string) (*Gitign
 
 // GitignoreTemplate represents a gitignore template.
 type GitignoreTemplate struct {
-	Name    string `json:"name"`
-	Source  string `json:"source"`
+	Name   string `json:"name"`
+	Source string `json:"source"`
 }
 
 // --- License Templates ---
@@ -176,21 +176,21 @@ func (c *Client) ListUserRepositories(ctx context.Context, username string, opts
 
 // ExtendedUser represents extended user information.
 type ExtendedUser struct {
-	ID                int64     `json:"id"`
-	Login             string    `json:"login"`
-	Name              string    `json:"name"`
-	Email             string    `json:"email"`
-	AvatarURL         string    `json:"avatar_url"`
-	HTMLURL           string    `json:"html_url"`
-	Type              string    `json:"type"`
-	Bio               string    `json:"bio,omitempty"`
-	Location          string    `json:"location,omitempty"`
-	Website           string    `json:"website,omitempty"`
-	FullName          string    `json:"full_name,omitempty"`
-	FollowersCount    int       `json:"followers_count,omitempty"`
-	FollowingCount    int       `json:"following_count,omitempty"`
-	StarredReposCount int       `json:"starred_repos_count,omitempty"`
-	Username          string    `json:"username,omitempty"`
+	ID                int64  `json:"id"`
+	Login             string `json:"login"`
+	Name              string `json:"name"`
+	Email             string `json:"email"`
+	AvatarURL         string `json:"avatar_url"`
+	HTMLURL           string `json:"html_url"`
+	Type              string `json:"type"`
+	Bio               string `json:"bio,omitempty"`
+	Location          string `json:"location,omitempty"`
+	Website           string `json:"website,omitempty"`
+	FullName          string `json:"full_name,omitempty"`
+	FollowersCount    int    `json:"followers_count,omitempty"`
+	FollowingCount    int    `json:"following_count,omitempty"`
+	StarredReposCount int    `json:"starred_repos_count,omitempty"`
+	Username          string `json:"username,omitempty"`
 }
 
 // GetExtendedUser gets extended information about a user.

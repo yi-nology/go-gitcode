@@ -13,7 +13,6 @@ linters:
     - bodyclose
     - durationcheck
     - errorlint
-    - exportloopref
     - gosec
     - misspell
     - nilerr
@@ -37,7 +36,8 @@ linters-settings:
     check-type-assertions: true
     check-blank: false
   govet:
-    check-shadowing: false
+    enable:
+      - shadow
   misspell:
     locale: US
   gosec:

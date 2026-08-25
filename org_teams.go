@@ -9,14 +9,14 @@ import (
 
 // Team represents an organization team.
 type Team struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-	Permission  string `json:"permission,omitempty"` // read, write, admin
-	Privacy     string `json:"privacy,omitempty"`    // closed, secret
-	CanCreateOrgRepo bool `json:"can_create_org_repo,omitempty"`
-	HTMLURL     string `json:"html_url,omitempty"`
-	Parent      *Team  `json:"parent,omitempty"`
+	ID               int64  `json:"id"`
+	Name             string `json:"name"`
+	Description      string `json:"description,omitempty"`
+	Permission       string `json:"permission,omitempty"` // read, write, admin
+	Privacy          string `json:"privacy,omitempty"`    // closed, secret
+	CanCreateOrgRepo bool   `json:"can_create_org_repo,omitempty"`
+	HTMLURL          string `json:"html_url,omitempty"`
+	Parent           *Team  `json:"parent,omitempty"`
 }
 
 // CreateTeamOptions specifies options for creating a team.

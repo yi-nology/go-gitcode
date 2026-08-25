@@ -9,14 +9,14 @@ import (
 
 // RepoInvitation represents a repository invitation.
 type RepoInvitation struct {
-	ID        int64      `json:"id"`
-	Repo      *Repository `json:"repo"`
-	Invitee   *User      `json:"invitee"`
-	Inviter   *User      `json:"inviter"`
-	Permission string    `json:"permission"`
-	CreatedAt  time.Time  `json:"created_at"`
-	URL       string     `json:"url"`
-	HTMLURL   string     `json:"html_url,omitempty"`
+	ID         int64       `json:"id"`
+	Repo       *Repository `json:"repo"`
+	Invitee    *User       `json:"invitee"`
+	Inviter    *User       `json:"inviter"`
+	Permission string      `json:"permission"`
+	CreatedAt  time.Time   `json:"created_at"`
+	URL        string      `json:"url"`
+	HTMLURL    string      `json:"html_url,omitempty"`
 }
 
 // AcceptRepoInvitation accepts a repository invitation.

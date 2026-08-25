@@ -95,10 +95,10 @@ func (c *Client) ListDiscussionCommentReplies(ctx context.Context, owner, repo s
 
 // ForkSyncStatus represents the sync status of a forked repository.
 type ForkSyncStatus struct {
-	Synced       bool   `json:"synced"`
-	BehindBy     int    `json:"behind_by"`
-	AheadBy      int    `json:"ahead_by"`
-	MergeBase    string `json:"merge_base,omitempty"`
+	Synced    bool   `json:"synced"`
+	BehindBy  int    `json:"behind_by"`
+	AheadBy   int    `json:"ahead_by"`
+	MergeBase string `json:"merge_base,omitempty"`
 }
 
 // GetForkSyncStatus checks the sync status of a forked repository.
@@ -160,11 +160,11 @@ func (c *Client) ListPushRemoteMirrors(ctx context.Context, owner, repo string, 
 
 // RepoLicense represents a repository license.
 type RepoLicense struct {
-	Key      string `json:"key"`
-	Name     string `json:"name"`
-	URL      string `json:"url,omitempty"`
-	HTMLURL  string `json:"html_url,omitempty"`
-	Body     string `json:"body,omitempty"`
+	Key     string `json:"key"`
+	Name    string `json:"name"`
+	URL     string `json:"url,omitempty"`
+	HTMLURL string `json:"html_url,omitempty"`
+	Body    string `json:"body,omitempty"`
 }
 
 // GetRepoLicense gets the license of a repository.
@@ -181,10 +181,10 @@ func (c *Client) GetRepoLicense(ctx context.Context, owner, repo string) (*RepoL
 
 // RepoCLA represents a repository CLA (Contributor License Agreement).
 type RepoCLA struct {
-	ID        int64  `json:"id"`
-	Name      string `json:"name"`
-	Content   string `json:"content,omitempty"`
-	Enabled   bool   `json:"enabled"`
+	ID      int64  `json:"id"`
+	Name    string `json:"name"`
+	Content string `json:"content,omitempty"`
+	Enabled bool   `json:"enabled"`
 }
 
 // ListRepoCLAs lists all CLAs for a repository.

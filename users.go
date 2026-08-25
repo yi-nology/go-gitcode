@@ -66,14 +66,14 @@ func (c *Client) DeleteSSHKey(ctx context.Context, id int64) error {
 }
 
 type UserEvent struct {
-	Action        int    `json:"action"`
-	ActionName    string `json:"action_name"`
-	AuthorID      int64  `json:"author_id"`
+	Action         int    `json:"action"`
+	ActionName     string `json:"action_name"`
+	AuthorID       int64  `json:"author_id"`
 	AuthorUsername string `json:"author_username"`
-	ProjectID     int64  `json:"project_id"`
-	ProjectName   string `json:"project_name"`
-	CreatedAt     string `json:"created_at"`
-	PushData      *struct {
+	ProjectID      int64  `json:"project_id"`
+	ProjectName    string `json:"project_name"`
+	CreatedAt      string `json:"created_at"`
+	PushData       *struct {
 		CommitCount int    `json:"commit_count"`
 		Action      string `json:"action"`
 		RefType     string `json:"ref_type"`

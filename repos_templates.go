@@ -8,13 +8,13 @@ import (
 
 // IssueTemplate represents a repository issue template.
 type IssueTemplate struct {
-	Name        string `json:"name"`
-	FileName    string `json:"file_name,omitempty"`
-	Title       string `json:"title"`
-	Body        string `json:"body"`
+	Name        string   `json:"name"`
+	FileName    string   `json:"file_name,omitempty"`
+	Title       string   `json:"title"`
+	Body        string   `json:"body"`
 	Labels      []string `json:"labels,omitempty"`
 	Assignees   []string `json:"assignees,omitempty"`
-	Description string `json:"description,omitempty"`
+	Description string   `json:"description,omitempty"`
 }
 
 // PRMergeTemplate represents a pull request merge template.

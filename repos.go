@@ -8,31 +8,31 @@ import (
 )
 
 type Repository struct {
-	ID              int64     `json:"id"`
-	FullName        string    `json:"full_name"`
-	Name            string    `json:"name"`
-	Path            string    `json:"path,omitempty"`
-	Owner           *User     `json:"owner"`
-	Namespace       *struct {
+	ID        int64  `json:"id"`
+	FullName  string `json:"full_name"`
+	Name      string `json:"name"`
+	Path      string `json:"path,omitempty"`
+	Owner     *User  `json:"owner"`
+	Namespace *struct {
 		ID   int64  `json:"id"`
 		Name string `json:"name"`
 		Path string `json:"path"`
 	} `json:"namespace,omitempty"`
-	Description     string    `json:"description"`
-	CloneURL        string    `json:"http_url_to_repo"`
-	SSHURL          string    `json:"ssh_url_to_repo"`
-	HTMLURL         string    `json:"web_url"`
-	DefaultBranch   string    `json:"default_branch"`
-	Private         bool      `json:"private"`
-	Public          bool      `json:"public,omitempty"`
-	Fork            bool      `json:"fork"`
-	StarsCount      int       `json:"stargazers_count"`
-	ForksCount      int       `json:"forks_count"`
-	WatchersCount   int       `json:"watchers_count"`
-	OpenIssuesCount int       `json:"open_issues_count"`
-	Language        string    `json:"language,omitempty"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	Description     string     `json:"description"`
+	CloneURL        string     `json:"http_url_to_repo"`
+	SSHURL          string     `json:"ssh_url_to_repo"`
+	HTMLURL         string     `json:"web_url"`
+	DefaultBranch   string     `json:"default_branch"`
+	Private         bool       `json:"private"`
+	Public          bool       `json:"public,omitempty"`
+	Fork            bool       `json:"fork"`
+	StarsCount      int        `json:"stargazers_count"`
+	ForksCount      int        `json:"forks_count"`
+	WatchersCount   int        `json:"watchers_count"`
+	OpenIssuesCount int        `json:"open_issues_count"`
+	Language        string     `json:"language,omitempty"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
 	PushedAt        *time.Time `json:"pushed_at,omitempty"`
 }
 
@@ -111,14 +111,14 @@ func (c *Client) ForkRepository(ctx context.Context, owner, repo string, opts *C
 }
 
 type RepositoryContent struct {
-	Name    string `json:"name"`
-	Path    string `json:"path"`
-	Size    int64  `json:"size"`
-	Type    string `json:"type"`
-	Content string `json:"content,omitempty"`
+	Name     string `json:"name"`
+	Path     string `json:"path"`
+	Size     int64  `json:"size"`
+	Type     string `json:"type"`
+	Content  string `json:"content,omitempty"`
 	Encoding string `json:"encoding,omitempty"`
-	SHA     string `json:"sha"`
-	Links   struct {
+	SHA      string `json:"sha"`
+	Links    struct {
 		Self string `json:"self"`
 		Git  string `json:"git"`
 	} `json:"_links"`
@@ -305,9 +305,9 @@ func (c *Client) GetRawFile(ctx context.Context, owner, repo, path, ref string) 
 }
 
 type GitTree struct {
-	SHA       string        `json:"sha"`
-	URL       string        `json:"url"`
-	Truncated bool          `json:"truncated"`
+	SHA       string          `json:"sha"`
+	URL       string          `json:"url"`
+	Truncated bool            `json:"truncated"`
 	Tree      []*GitTreeEntry `json:"tree"`
 }
 
@@ -416,14 +416,14 @@ func (c *Client) ListRepoEvents(ctx context.Context, owner, repo string, opts Li
 }
 
 type RepoSettings struct {
-	ID             int64  `json:"id"`
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	DefaultBranch  string `json:"default_branch"`
-	HasIssues      bool   `json:"has_issues"`
-	HasWiki        bool   `json:"has_wiki"`
-	CanComment     bool   `json:"can_comment"`
-	Private        bool   `json:"private"`
+	ID            int64  `json:"id"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	DefaultBranch string `json:"default_branch"`
+	HasIssues     bool   `json:"has_issues"`
+	HasWiki       bool   `json:"has_wiki"`
+	CanComment    bool   `json:"can_comment"`
+	Private       bool   `json:"private"`
 }
 
 func (c *Client) GetRepoSettings(ctx context.Context, owner, repo string) (*RepoSettings, error) {
@@ -445,19 +445,19 @@ func (c *Client) UpdateRepoSettings(ctx context.Context, owner, repo string, opt
 }
 
 type CreateOrgRepoOptions struct {
-	Name             string `json:"name"`
-	Description      string `json:"description,omitempty"`
-	Homepage         string `json:"homepage,omitempty"`
-	HasIssues        *bool  `json:"has_issues,omitempty"`
-	HasWiki          *bool  `json:"has_wiki,omitempty"`
-	CanComment       *bool  `json:"can_comment,omitempty"`
-	Public           *int   `json:"public,omitempty"`
-	Private          *bool  `json:"private,omitempty"`
-	AutoInit         *bool  `json:"auto_init,omitempty"`
+	Name              string `json:"name"`
+	Description       string `json:"description,omitempty"`
+	Homepage          string `json:"homepage,omitempty"`
+	HasIssues         *bool  `json:"has_issues,omitempty"`
+	HasWiki           *bool  `json:"has_wiki,omitempty"`
+	CanComment        *bool  `json:"can_comment,omitempty"`
+	Public            *int   `json:"public,omitempty"`
+	Private           *bool  `json:"private,omitempty"`
+	AutoInit          *bool  `json:"auto_init,omitempty"`
 	GitignoreTemplate string `json:"gitignore_template,omitempty"`
-	LicenseTemplate  string `json:"license_template,omitempty"`
-	Path             string `json:"path,omitempty"`
-	DefaultBranch    string `json:"default_branch,omitempty"`
+	LicenseTemplate   string `json:"license_template,omitempty"`
+	Path              string `json:"path,omitempty"`
+	DefaultBranch     string `json:"default_branch,omitempty"`
 }
 
 func (c *Client) CreateOrgRepository(ctx context.Context, org string, opts CreateOrgRepoOptions) (*Repository, error) {
@@ -540,9 +540,9 @@ func (c *Client) UploadImage(ctx context.Context, owner, repo string, filePath s
 }
 
 type PushConfig struct {
-	MaxFileSize int    `json:"max_file_size"`
-	ProhibitedFiles []string `json:"prohibited_files"`
-	CommitMessageRegex string `json:"commit_message_regex"`
+	MaxFileSize        int      `json:"max_file_size"`
+	ProhibitedFiles    []string `json:"prohibited_files"`
+	CommitMessageRegex string   `json:"commit_message_regex"`
 }
 
 func (c *Client) GetPushConfig(ctx context.Context, owner, repo string) (*PushConfig, error) {

@@ -108,13 +108,13 @@ func (c *Client) ListOrgFollowers(ctx context.Context, org string, opts ListOpti
 }
 
 type OrgMember struct {
-	AvatarURL    string `json:"avatar_url"`
-	HTMLURL      string `json:"html_url"`
-	ID           string `json:"id"`
-	Login        string `json:"login"`
-	MemberRole   string `json:"member_role"`
-	Name         string `json:"name"`
-	Type         string `json:"type"`
+	AvatarURL  string `json:"avatar_url"`
+	HTMLURL    string `json:"html_url"`
+	ID         string `json:"id"`
+	Login      string `json:"login"`
+	MemberRole string `json:"member_role"`
+	Name       string `json:"name"`
+	Type       string `json:"type"`
 }
 
 func (c *Client) ListOrgMembers(ctx context.Context, org, role string, opts ListOptions) ([]*OrgMember, error) {
@@ -160,10 +160,10 @@ func (c *Client) ExitOrganization(ctx context.Context, org string) error {
 }
 
 type EnterpriseMember struct {
-	User     *User  `json:"user"`
-	URL      string `json:"url"`
-	Active   bool   `json:"active"`
-	Role     string `json:"role"`
+	User       *User  `json:"user"`
+	URL        string `json:"url"`
+	Active     bool   `json:"active"`
+	Role       string `json:"role"`
 	Enterprise *struct {
 		ID  int64  `json:"id"`
 		URL string `json:"url"`
