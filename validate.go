@@ -1,6 +1,9 @@
 package gitcode
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // ValidationErrorField represents a client-side validation error.
 type ValidationErrorField struct {
@@ -24,6 +27,8 @@ func validateOwnerRepo(owner, repo string) error {
 }
 
 // validateOwner validates that owner is not empty.
+//
+//nolint:unused
 func validateOwner(owner string) error {
 	if owner == "" {
 		return &ValidationErrorField{Field: "owner", Message: "owner is required"}
@@ -41,6 +46,6 @@ func validateNonEmpty(field, value string) error {
 
 // IsValidationError checks if an error is a client-side validation error.
 func IsValidationError(err error) bool {
-	_, ok := err.(*ValidationErrorField)
-	return ok
+	var target *ValidationErrorField
+	return errors.As(err, &target)
 }

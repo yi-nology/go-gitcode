@@ -191,8 +191,8 @@ type RepoCLA struct {
 //
 // GET /repos/{owner}/{repo}/clas
 func (c *Client) ListRepoCLAs(ctx context.Context, owner, repo string) ([]*RepoCLA, error) {
-	var claList []*RepoCLA //nolint:misspell // "clas" is the API endpoint name
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/clas", owner, repo), nil, &claList)
+	var claList []*RepoCLA                                                                                //nolint:misspell // "clas" is the API endpoint name
+	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/clas", owner, repo), nil, &claList) //nolint:misspell // API endpoint
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +204,7 @@ func (c *Client) ListRepoCLAs(ctx context.Context, owner, repo string) ([]*RepoC
 // PUT /repos/{owner}/{repo}/clas
 func (c *Client) ConfigureRepoCLA(ctx context.Context, owner, repo string, opts *RepoCLA) (*RepoCLA, error) {
 	var cla RepoCLA
-	err := c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/clas", owner, repo), opts, &cla)
+	err := c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/clas", owner, repo), opts, &cla) //nolint:misspell // API endpoint
 	if err != nil {
 		return nil, err
 	}

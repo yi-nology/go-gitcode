@@ -105,7 +105,7 @@ type IssueWebhookEvent struct {
 }
 
 type NoteWebhookEvent struct {
-	NoteType   string      `json:"noteable_type"`
+	NoteType   string      `json:"noteable_type"` //nolint:misspell // API field name
 	NoteID     int64       `json:"id"`
 	Body       string      `json:"body"`
 	Author     *User       `json:"author"`

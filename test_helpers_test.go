@@ -43,6 +43,8 @@ func methodRouter(routes map[string]http.HandlerFunc) http.HandlerFunc {
 }
 
 // pathMethodRouter returns a handler that dispatches based on method+path.
+//
+//nolint:unused
 func pathMethodRouter(routes map[string]map[string]http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if methods, ok := routes[r.URL.Path]; ok {
