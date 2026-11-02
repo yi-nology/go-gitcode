@@ -53,7 +53,7 @@ Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对
 go get github.com/yi-nology/go-gitcode@latest
 ```
 
-当前最新版本为 `v0.8.0`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
+当前最新版本为 `v0.9.0`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
 
 ## 快速开始
 
@@ -778,24 +778,6 @@ client.RemoveTeamMember(ctx, team.ID, "old-member")
 client.ListTeamRepositories(ctx, team.ID, gitcode.ListOptions{})
 client.AddTeamRepository(ctx, team.ID, "my-org", "my-repo")
 client.RemoveTeamRepository(ctx, team.ID, "my-org", "my-repo")
-```
-
-### 组织 Webhook
-
-```go
-// 创建组织 Webhook
-active := true
-hook, _ := client.CreateOrgWebhook(ctx, "my-org", gitcode.CreateOrgWebhookOptions{
-    URL:    "https://example.com/org-hook",
-    Events: []string{"push", "repository"},
-    Active: &active,
-})
-
-// 列出/获取/更新/删除
-hooks, _ := client.ListOrgWebhooks(ctx, "my-org", gitcode.ListOptions{})
-client.GetOrgWebhook(ctx, "my-org", hook.ID)
-client.UpdateOrgWebhook(ctx, "my-org", hook.ID, gitcode.UpdateOrgWebhookOptions{URL: "https://new-url.com"})
-client.DeleteOrgWebhook(ctx, "my-org", hook.ID)
 ```
 
 ### 组织标签

@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.9.0] - 2026-11-02
+
+### Removed
+- **`org_hooks.go` (organization webhooks) deleted entirely.** Neither the
+  documented GitCode v5 API (docs.gitcode.com/docs/apis lists only
+  repo-scoped `repos/{owner}/{repo}/hooks`) nor the companion AtomGit API
+  docs have an `orgs/{org}/hooks` endpoint — the module was a GitHub-shaped
+  invention (config/secret/events, the same wire fictions removed from the
+  repo-level webhook in v0.8.0) that could only ever 404 against real
+  servers. Removing beats shipping a plausible-looking lie.
+
+### Migration notes (v0.8.x → v0.9.0)
+- `ListOrgWebhooks` / `GetOrgWebhook` / `CreateOrgWebhook` /
+  `UpdateOrgWebhook` / `DeleteOrgWebhook`, the `OrgWebhook` /
+  `WebhookConfig` / `CreateOrgWebhookOptions` / `UpdateOrgWebhookOptions`
+  types are gone. There is no org-level hook API to migrate to: use
+  repo-level webhooks (`ListWebhooksWithOptions` family), or call the
+  endpoint raw if a private deployment actually exposes one.
+
 ## [v0.8.0] - 2026-11-02
 
 Wire-shape corrections against the documented GitCode v5 API
