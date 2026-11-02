@@ -10,14 +10,21 @@ import (
 	"time"
 )
 
-const testToken = "1ztQWzf-iMh5HviDtYQsjWbV"
 
+// getTestClient returns a client for the live-API tests. The suite is
+// env-gated: without GITCODE_TOKEN every live test skips, so plain
+// `go test` (and CI's unit step) stays hermetic — live credentials must
+// never be committed to the repo.
 func getTestClient(t *testing.T) *Client {
 	t.Helper()
-	if baseURL := os.Getenv(EnvGitBaseURL); baseURL != "" {
-		return NewClientWithBaseURL(baseURL, testToken)
+	token := os.Getenv(EnvGitToken)
+	if token == "" {
+		t.Skip("live API test: set GITCODE_TOKEN to enable")
 	}
-	return NewClient(testToken)
+	if baseURL := os.Getenv(EnvGitBaseURL); baseURL != "" {
+		return NewClientWithBaseURL(baseURL, token)
+	}
+	return NewClient(token)
 }
 
 func getTestOwner(t *testing.T, client *Client) string {
