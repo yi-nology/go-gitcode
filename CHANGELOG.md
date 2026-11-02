@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.13.0] - 2026-11-03
+
+### Fixed
+- **live 验证回滚 v0.12.0 的拼写修正**：以有效 token 对真实服务只读探针
+  实证 `/issues/{n}/pull_requests` 与 `/issues/{n}/operate_logs` 的
+  **下划线**形式 200、文档 slug 的连字符形式 404——文档的 slug 拼写是
+  错的，live 证据优先。v0.12.0 的四处连字符改动全部回滚，拼写测试改为
+  钉下划线语义并注明探针日期。
+
+### Docs
+- `docs/wire-provenance.md` 重写：live 探针结论表覆盖推测。**Gitea 血统
+  假设被推翻**——statuses/{sha}、deploy keys、reactions（两种形状含文档
+  形 user-reactions 全死）、timeline/subscribers/dependencies、topics、
+  git/refs、git/tags、wiki、issue_templates、assignees、全局
+  /notifications、/user/orgs 全部 404（真实 commit SHA/真实 issue 上探，
+  文档化对照端点同轮 200）；活着的未文档化端点：pull_requests 与
+  operate_logs 的下划线形式、仓库域 notifications。分支方言从三类修正为：
+  文档化+live 证实 / live 实证死路径 / 确认虚构。
+
+### 注意（下游）
+- 上游 go-git-platform 的 gitcode backend 曾消费其中四个死面（commit
+  status、deploy keys、reactions、全局通知）——主仓 v0.101.0 起相应
+  收缩其 gitcode 能力面。
+
 ## [v0.12.0] - 2026-11-02
 
 ### Fixed

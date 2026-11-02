@@ -265,12 +265,13 @@ func TestEnterpriseV5Legacy_Wire(t *testing.T) {
 	}
 }
 
-// The issue→PR links use the documented hyphen spelling (v0.12.0: was the
-// Gitee-style underscore).
-func TestIssueLinkedPRs_HyphenSpelling(t *testing.T) {
+// The issue→PR links use the underscore spelling. The v0.12.0 hyphen form
+// (docs slug spelling) 404s live while the underscore form 200s — live
+// evidence overrides the docs' query-string style (probed 2026-11-03).
+func TestIssueLinkedPRs_UnderscoreSpelling(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/api/v5/repos/o/r/issues/3/pull-requests" {
-			t.Errorf("path = %s (want the documented pull-requests spelling)", r.URL.Path)
+		if r.URL.Path != "/api/v5/repos/o/r/issues/3/pull_requests" {
+			t.Errorf("path = %s (want the live-verified underscore spelling)", r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[]`))

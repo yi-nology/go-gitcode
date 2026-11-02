@@ -429,7 +429,7 @@ func (c *Client) ListEnterprisePullRequests(ctx context.Context, enterprise stri
 	if opts.Direction != "" {
 		query += "&direction=" + opts.Direction
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/pull-requests?%s", enterprise, query), nil, &prs)
+	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/pull_requests?%s", enterprise, query), nil, &prs)
 	if err != nil {
 		return nil, err
 	}
@@ -451,7 +451,7 @@ func (c *Client) ListOrgPullRequests(ctx context.Context, org string, opts ListE
 	if opts.Direction != "" {
 		query += "&direction=" + opts.Direction
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/org/%s/pull-requests?%s", org, query), nil, &prs)
+	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/org/%s/pull_requests?%s", org, query), nil, &prs)
 	if err != nil {
 		return nil, err
 	}
@@ -460,7 +460,7 @@ func (c *Client) ListOrgPullRequests(ctx context.Context, org string, opts ListE
 
 func (c *Client) GetEnterpriseIssueLinkedPRs(ctx context.Context, enterprise string, number int) ([]*PullRequest, error) {
 	var prs []*PullRequest
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/issues/%d/pull-requests", enterprise, number), nil, &prs)
+	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/issues/%d/pull_requests", enterprise, number), nil, &prs)
 	if err != nil {
 		return nil, err
 	}
