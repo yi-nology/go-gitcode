@@ -1,15 +1,12 @@
+version: "2"
 run:
-  timeout: 5m
   go: "1.26"
-
+output:
+  formats:
+    text:
+      path: stdout
 linters:
   enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
     - bodyclose
     - durationcheck
     - errorlint
@@ -21,46 +18,55 @@ linters:
     - wastedassign
   disable:
     - depguard
+    - exhaustruct
     - funlen
     - gocognit
     - gocyclo
     - godox
+    - ireturn
     - lll
     - nlreturn
     - wrapcheck
-    - exhaustruct
-    - ireturn
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: false
-  govet:
-    disable:
-      - shadow
-  misspell:
-    locale: US
-  gosec:
-    excludes:
-      - G104 # Errors unhandled (we handle them in API methods)
-      - G304 # File path provided as taint input (not applicable)
-
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: false
+    gosec:
+      excludes:
+        - G104
+        - G304
+    govet:
+      disable:
+        - shadow
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - errcheck
+          - gosec
+          - unparam
+        path: _test\.go
+      - linters:
+          - unparam
+        text: always receives
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
   max-issues-per-linter: 50
   max-same-issues: 10
-  exclude-rules:
-    # Exclude some linters from running on test files
-    - path: _test\.go
-      linters:
-        - errcheck
-        - gosec
-        - unparam
-    # Allow unused parameters in interface implementations
-    - linters:
-        - unparam
-      text: "always receives"
-
-output:
-  formats:
-    - format: colored-line-number
-  sort-results: true
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

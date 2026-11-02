@@ -8,37 +8,83 @@ import (
 	"time"
 )
 
+// Webhook mirrors GitCode's documented repository hook object. The wire
+// expresses event subscriptions as per-family flags (push_events,
+// issues_events, ...) — there is no "events" array. The flags use FlexBool
+// because the documented response schema types them as integers (0/1).
 type Webhook struct {
 	ID                  int64     `json:"id"`
 	URL                 string    `json:"url"`
-	Events              []string  `json:"events"`
-	PushEvents          bool      `json:"push_events"`
-	TagPushEvents       bool      `json:"tag_push_events"`
-	IssuesEvents        bool      `json:"issues_events"`
-	MergeRequestsEvents bool      `json:"merge_requests_events"`
-	NoteEvents          bool      `json:"note_events"`
-	Active              bool      `json:"active"`
+	Password            string    `json:"password,omitempty"`
+	EncryptionType      *int      `json:"encryption_type,omitempty"`
+	ProjectID           int64     `json:"project_id,omitempty"`
+	PushEvents          FlexBool  `json:"push_events"`
+	TagPushEvents       FlexBool  `json:"tag_push_events"`
+	IssuesEvents        FlexBool  `json:"issues_events"`
+	MergeRequestsEvents FlexBool  `json:"merge_requests_events"`
+	NoteEvents          FlexBool  `json:"note_events"`
+	Active              FlexBool  `json:"active"`
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
 }
 
+// CreateWebhookOptions is the body of POST /repos/{owner}/{repo}/hooks.
+// Event subscriptions are per-family flags: nil leaves the family at the
+// server default, a pointer (use Bool) states it explicitly.
 type CreateWebhookOptions struct {
-	URL    string   `json:"url"`
-	Secret string   `json:"secret,omitempty"`
-	Events []string `json:"events,omitempty"`
-	Active *bool    `json:"active,omitempty"`
+	URL      string `json:"url"`
+	Password string `json:"password,omitempty"`
+	// EncryptionType: 0 = password (default), 1 = signature key.
+	EncryptionType      *int  `json:"encryption_type,omitempty"`
+	PushEvents          *bool `json:"push_events,omitempty"`
+	TagPushEvents       *bool `json:"tag_push_events,omitempty"`
+	IssuesEvents        *bool `json:"issues_events,omitempty"`
+	NoteEvents          *bool `json:"note_events,omitempty"`
+	MergeRequestsEvents *bool `json:"merge_requests_events,omitempty"`
+	Active              *bool `json:"active,omitempty"`
 }
 
+// UpdateWebhookOptions is the body of PATCH
+// /repos/{owner}/{repo}/hooks/{id}. Nil fields stay off the wire
+// ("unchanged"); a pointer set through Bool(false) turns a family off.
 type UpdateWebhookOptions struct {
-	URL    string   `json:"url,omitempty"`
-	Secret string   `json:"secret,omitempty"`
-	Events []string `json:"events,omitempty"`
-	Active *bool    `json:"active,omitempty"`
+	URL                 string `json:"url,omitempty"`
+	Password            string `json:"password,omitempty"`
+	EncryptionType      *int   `json:"encryption_type,omitempty"`
+	PushEvents          *bool  `json:"push_events,omitempty"`
+	TagPushEvents       *bool  `json:"tag_push_events,omitempty"`
+	IssuesEvents        *bool  `json:"issues_events,omitempty"`
+	NoteEvents          *bool  `json:"note_events,omitempty"`
+	MergeRequestsEvents *bool  `json:"merge_requests_events,omitempty"`
+	Active              *bool  `json:"active,omitempty"`
 }
 
+// Bool returns a pointer to v, for the webhook option flag fields.
+func Bool(v bool) *bool { return &v }
+
+// EventFlags maps the platform-neutral event names used by this SDK's
+// callers onto GitCode's per-family flag fields.
+var EventFlags = map[string]string{
+	"push":          "push_events",
+	"tag_push":      "tag_push_events",
+	"issues":        "issues_events",
+	"note":          "note_events",
+	"comment":       "note_events",
+	"pull_request":  "merge_requests_events",
+	"merge_request": "merge_requests_events",
+}
+
+// ListWebhooks lists a repository's hooks (server-default first page). Use
+// ListWebhooksWithOptions to drive pagination.
 func (c *Client) ListWebhooks(ctx context.Context, owner, repo string) ([]*Webhook, error) {
+	return c.ListWebhooksWithOptions(ctx, owner, repo, ListOptions{})
+}
+
+// ListWebhooksWithOptions lists a repository's hooks with explicit
+// pagination (GET /repos/{owner}/{repo}/hooks).
+func (c *Client) ListWebhooksWithOptions(ctx context.Context, owner, repo string, opts ListOptions) ([]*Webhook, error) {
 	var hooks []*Webhook
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/hooks", owner, repo), nil, &hooks)
+	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/hooks?%s", owner, repo, opts.toQuery()), nil, &hooks)
 	if err != nil {
 		return nil, err
 	}

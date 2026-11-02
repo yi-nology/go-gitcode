@@ -89,6 +89,37 @@ func (fs *FlexString) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// FlexBool tolerates the value shapes seen across GitCode deployments for
+// boolean flags: JSON true/false, the integers 0/1 (the documented hook
+// response schema uses integer flags), and "true"/"false"/"0"/"1" strings.
+type FlexBool bool
+
+func (fb *FlexBool) UnmarshalJSON(data []byte) error {
+	var b bool
+	if err := json.Unmarshal(data, &b); err == nil {
+		*fb = FlexBool(b)
+		return nil
+	}
+	var n int
+	if err := json.Unmarshal(data, &n); err == nil {
+		*fb = n != 0
+		return nil
+	}
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "true", "1", "yes", "on":
+		*fb = true
+	case "false", "0", "no", "off", "":
+		*fb = false
+	default:
+		return fmt.Errorf("invalid boolean value %q", s)
+	}
+	return nil
+}
+
 type Error struct {
 	Message string `json:"message"`
 	Errors  []struct {

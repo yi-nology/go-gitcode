@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -40,14 +41,23 @@ type Label struct {
 	Color string `json:"color"`
 }
 
+// Milestone mirrors GitCode's documented milestone object: the wire
+// identifies milestones by `number` (older deployments may also emit `id`),
+// and `due_on` is a date-only string such as "2026-01-31" — deliberately a
+// string, since Go's time.Time rejects that shape.
 type Milestone struct {
-	ID          int64      `json:"id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	State       string     `json:"state"`
-	DueDate     *time.Time `json:"due_date"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID           int64     `json:"id"`
+	Number       int64     `json:"number"`
+	RepositoryID int64     `json:"repository_id"`
+	Title        string    `json:"title"`
+	Description  string    `json:"description"`
+	State        string    `json:"state"`
+	DueOn        string    `json:"due_on,omitempty"`
+	URL          string    `json:"url,omitempty"`
+	OpenIssues   int       `json:"open_issues"`
+	ClosedIssues int       `json:"closed_issues"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 type IssueComment struct {
@@ -114,32 +124,34 @@ type UpdateIssueOptions struct {
 
 func (c *Client) ListIssues(ctx context.Context, owner, repo string, opts ListIssuesOptions) ([]*Issue, error) {
 	var issues []*Issue
-	query := opts.toQuery()
+	q := url.Values{}
+	q.Set("page", strconv.Itoa(opts.withDefaults().Page))
+	q.Set("per_page", strconv.Itoa(opts.withDefaults().PerPage))
 	if opts.State != "" {
-		query += "&state=" + string(opts.State)
+		q.Set("state", string(opts.State))
 	}
 	if opts.Assignee != "" {
-		query += "&assignee=" + opts.Assignee
+		q.Set("assignee", opts.Assignee)
 	}
 	if opts.Creator != "" {
-		query += "&creator=" + opts.Creator
+		q.Set("creator", opts.Creator)
 	}
 	if opts.Milestone != "" {
-		query += "&milestone=" + opts.Milestone
+		q.Set("milestone", opts.Milestone)
 	}
 	if opts.Labels != "" {
-		query += "&labels=" + opts.Labels
+		q.Set("labels", opts.Labels)
 	}
 	if opts.Sort != "" {
-		query += "&sort=" + opts.Sort
+		q.Set("sort", opts.Sort)
 	}
 	if opts.Direction != "" {
-		query += "&direction=" + opts.Direction
+		q.Set("direction", opts.Direction)
 	}
 	if opts.Since != "" {
-		query += "&since=" + opts.Since
+		q.Set("since", opts.Since)
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues?%s", owner, repo, query), nil, &issues)
+	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues?%s", owner, repo, q.Encode()), nil, &issues)
 	if err != nil {
 		return nil, err
 	}
@@ -195,9 +207,34 @@ func (c *Client) ReopenIssue(ctx context.Context, owner, repo string, number int
 	})
 }
 
+// ListIssueCommentsOptions carries the documented query parameters of the
+// issue-comment list endpoint (page/per_page plus order/since).
+type ListIssueCommentsOptions struct {
+	ListOptions
+	Order string `json:"order,omitempty"` // "asc" (default) or "desc"
+	Since string `json:"since,omitempty"` // RFC3339 timestamp; '+' must be URL-encoded
+}
+
+// ListIssueComments lists the comments of an issue (server-default first
+// page). Use ListIssueCommentsWithOptions to drive pagination.
 func (c *Client) ListIssueComments(ctx context.Context, owner, repo string, number int) ([]*IssueComment, error) {
+	return c.ListIssueCommentsWithOptions(ctx, owner, repo, number, ListIssueCommentsOptions{})
+}
+
+// ListIssueCommentsWithOptions lists the comments of an issue with explicit
+// pagination (GET /repos/{owner}/{repo}/issues/{number}/comments).
+func (c *Client) ListIssueCommentsWithOptions(ctx context.Context, owner, repo string, number int, opts ListIssueCommentsOptions) ([]*IssueComment, error) {
 	var comments []*IssueComment
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/%d/comments", owner, repo, number), nil, &comments)
+	q := url.Values{}
+	q.Set("page", strconv.Itoa(opts.withDefaults().Page))
+	q.Set("per_page", strconv.Itoa(opts.withDefaults().PerPage))
+	if opts.Order != "" {
+		q.Set("order", opts.Order)
+	}
+	if opts.Since != "" {
+		q.Set("since", opts.Since)
+	}
+	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/%d/comments?%s", owner, repo, number, q.Encode()), nil, &comments)
 	if err != nil {
 		return nil, err
 	}
@@ -226,9 +263,17 @@ func (c *Client) DeleteIssueComment(ctx context.Context, owner, repo string, com
 	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/issues/comments/%d", owner, repo, commentID), nil, nil)
 }
 
+// ListIssueLabels lists a repository's labels (server-default first page).
+// Use ListIssueLabelsWithOptions to drive pagination.
 func (c *Client) ListIssueLabels(ctx context.Context, owner, repo string) ([]*Label, error) {
+	return c.ListIssueLabelsWithOptions(ctx, owner, repo, ListOptions{})
+}
+
+// ListIssueLabelsWithOptions lists a repository's labels with explicit
+// pagination (GET /repos/{owner}/{repo}/labels).
+func (c *Client) ListIssueLabelsWithOptions(ctx context.Context, owner, repo string, opts ListOptions) ([]*Label, error) {
 	var labels []*Label
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/labels", owner, repo), nil, &labels)
+	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/labels?%s", owner, repo, opts.toQuery()), nil, &labels)
 	if err != nil {
 		return nil, err
 	}

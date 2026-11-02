@@ -53,7 +53,7 @@ Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对
 go get github.com/yi-nology/go-gitcode@latest
 ```
 
-当前最新版本为 `v0.7.2`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
+当前最新版本为 `v0.8.0`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
 
 ## 快速开始
 
@@ -620,14 +620,21 @@ client.UpdateRelease(ctx, "owner", "repo", releaseID, gitcode.UpdateReleaseOptio
 ```go
 active := true
 hook, _ := client.CreateWebhook(ctx, "owner", "repo", gitcode.CreateWebhookOptions{
-    URL:    "https://example.com/hook",
-    Secret: "s3cret",
-    Events: []string{"push", "pull_request"},
-    Active: &active,
+    URL:                 "https://example.com/hook",
+    Password:            "s3cret", // wire 字段名为 password(非 GitHub 的 secret)
+    PushEvents:          gitcode.Bool(true),
+    MergeRequestsEvents: gitcode.Bool(true), // pull_request 事件族
+    Active:              &active,
 })
 client.TestWebhook(ctx, "owner", "repo", hook.ID)
 client.DeleteWebhook(ctx, "owner", "repo", hook.ID)
 ```
+
+GitCode 的 webhook 事件订阅是逐族布尔字段(`push_events` /
+`tag_push_events` / `issues_events` / `note_events` /
+`merge_requests_events`),没有 `events` 数组;更新时 `nil` = 不变,
+`gitcode.Bool(false)` = 关闭该族。中性事件名可用
+`gitcode.EventFlags` 映射。
 
 接收并解析事件(以 Gin 为例):
 

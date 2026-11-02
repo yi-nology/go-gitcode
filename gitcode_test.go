@@ -881,10 +881,11 @@ func TestWebhookCRUD(t *testing.T) {
 	// Create webhook
 	active := true
 	hook, err := client.CreateWebhook(ctx, owner, repoName, CreateWebhookOptions{
-		URL:    "https://example.com/webhook/test",
-		Secret: "test-secret",
-		Events: []string{"push", "pull_request"},
-		Active: &active,
+		URL:                 "https://example.com/webhook/test",
+		Password:            "test-secret",
+		PushEvents:          Bool(true),
+		MergeRequestsEvents: Bool(true),
+		Active:              &active,
 	})
 	if err != nil {
 		t.Fatalf("CreateWebhook failed: %v", err)

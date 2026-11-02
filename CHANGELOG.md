@@ -5,6 +5,65 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.8.0] - 2026-11-02
+
+Wire-shape corrections against the documented GitCode v5 API
+(docs.gitcode.com), driven by the needs of go-git-platform's gitcode
+backend. 0.x carries the breaking renames in a minor per policy.
+
+### Fixed
+- **Webhook secret never took effect**: create/update bodies carried
+  `secret`, but the documented wire field is `password` (plus
+  `encryption_type`, 0 = password / 1 = signature key). `Secret` is
+  replaced by `Password`.
+- **Webhook event subscriptions were fictional**: GitCode's hook API has
+  no `events` array — event families are the per-family flags
+  `push_events` / `tag_push_events` / `issues_events` / `note_events` /
+  `merge_requests_events`. The `Events []string` field is removed from
+  `Webhook`, `CreateWebhookOptions`, and `UpdateWebhookOptions`; the
+  options now expose `*bool` flags (`nil` = unchanged, `Bool(false)` =
+  family off) and the response flags use the tolerant `FlexBool`
+  (accepts 0/1, true/false, strings) since the documented response
+  schema types them as integers.
+- **Milestone wire shape**: the response identifies milestones by
+  `number` and carries `due_on` as a date-only string ("2026-01-31").
+  `Milestone` gains `Number` / `RepositoryID` / `URL` / `OpenIssues` /
+  `ClosedIssues`; `DueDate *time.Time` (`json:"due_date"`, never
+  populated and unable to parse date-only values) is replaced by
+  `DueOn string` (`json:"due_on"`). Create/update option structs now
+  marshal `due_on` with `omitempty`, so an unset due date stays off the
+  wire instead of going out as `""` (which clears or errors).
+- **Query injection through unescaped values**: filter values (labels
+  with spaces, `since` timestamps containing `+`, ...) are now escaped
+  via `url.Values` in `ListIssues` and `ListMilestonesWithOptions`
+  instead of being spliced raw into the query string.
+- `.golangci.yml` migrated to golangci-lint v2 config syntax.
+
+### Added
+- `ListIssueCommentsOptions{ListOptions, Order, Since}` and
+  `ListIssueCommentsWithOptions` — the issue-comment list endpoint takes
+  `page` / `per_page` / `order` / `since`; `ListIssueComments` remains
+  as the first-page convenience wrapper.
+- `ListIssueLabelsWithOptions(ListOptions)` and
+  `ListWebhooksWithOptions(ListOptions)` for paginating the repository
+  label and hook lists (both default to 100 per page server-side).
+- `Bool(v bool) *bool` helper for the webhook flag fields, and
+  `EventFlags` mapping neutral event names ("push", "pull_request",
+  "issues", "note", "comment", "tag_push") onto the flag fields.
+- `FlexBool` tolerant boolean type.
+- `Milestone` now also surfaces the documented `state` counter fields
+  (`open_issues` / `closed_issues`).
+
+### Migration notes (v0.7.x → v0.8.0)
+- `CreateWebhookOptions.Secret` / `UpdateWebhookOptions.Secret` →
+  `Password`.
+- `Webhook.Events` / `CreateWebhookOptions.Events` /
+  `UpdateWebhookOptions.Events` → per-family flags
+  (`PushEvents` etc.); map neutral names via `EventFlags`.
+- `Milestone.DueDate` (`*time.Time`) → `Milestone.DueOn` (`string`,
+  date-only as served); milestone identity: prefer `Number` (falls back
+  to `ID` on older deployments).
+
 ## [v0.7.2] - 2026-08-25
 
 ### Fixed

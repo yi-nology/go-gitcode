@@ -50,7 +50,7 @@ type SearchRepositoryResult struct {
 
 func (c *Client) SearchRepositories(ctx context.Context, opts SearchRepositoriesOptions) ([]*SearchRepositoryResult, error) {
 	var repos []*SearchRepositoryResult
-	query := fmt.Sprintf("q=%s&%s", opts.Query, opts.ListOptions.toQuery())
+	query := fmt.Sprintf("q=%s&%s", opts.Query, opts.toQuery())
 	if opts.Sort != "" {
 		query += "&sort=" + opts.Sort
 	}
@@ -107,7 +107,7 @@ type SearchIssueResult struct {
 
 func (c *Client) SearchIssues(ctx context.Context, opts SearchIssuesOptions) ([]*SearchIssueResult, error) {
 	var issues []*SearchIssueResult
-	query := fmt.Sprintf("q=%s&%s", opts.Query, opts.ListOptions.toQuery())
+	query := fmt.Sprintf("q=%s&%s", opts.Query, opts.toQuery())
 	if opts.Sort != "" {
 		query += "&sort=" + opts.Sort
 	}
@@ -145,7 +145,7 @@ type SearchUserResult struct {
 
 func (c *Client) SearchUsers(ctx context.Context, opts SearchUsersOptions) ([]*SearchUserResult, error) {
 	var users []*SearchUserResult
-	query := fmt.Sprintf("q=%s&%s", opts.Query, opts.ListOptions.toQuery())
+	query := fmt.Sprintf("q=%s&%s", opts.Query, opts.toQuery())
 	if opts.Sort != "" {
 		query += "&sort=" + opts.Sort
 	}
