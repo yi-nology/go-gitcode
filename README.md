@@ -15,7 +15,8 @@ Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对
 - **分支** — 列表/创建/删除,保护分支规则,提交比较,提交历史
 - **Webhook** — CRUD、测试推送,Push/TagPull/Issue/PullRequest/Note 事件解析
 - **用户** — 当前用户/指定用户、SSH 公钥、邮箱、动态、Star/Watch 仓库、Namespace、关注/取关、更新资料、用户 PR 列表
-- **组织 / 企业** — 组织信息/成员/关注者/公开成员/屏蔽用户,企业成员、企业 Issue/PR、Issue 扩展状态、企业标签、组织自定义角色、组织讨论
+- **组织** — 组织信息/成员/关注者/公开成员/屏蔽用户、组织自定义角色、组织讨论
+- **企业 (v8 wire)** — 成员(邀请/改权限/删,自定义角色)、里程碑 CRUD、标签 CRUD、Issue 自定义字段、Issue 过滤列表(POST)、组织关联企业——GitCode 的 Enterprise API 只有 v8 版本,按数字企业 id 寻址(GetOrgEnterprise 可查)
 - **组织团队** — 团队 CRUD、成员管理、仓库关联
 - **组织 Webhook** — 组织级 Webhook CRUD
 - **组织标签** — 组织级标签 CRUD
@@ -53,7 +54,7 @@ Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对
 go get github.com/yi-nology/go-gitcode@latest
 ```
 
-当前最新版本为 `v0.10.0`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
+当前最新版本为 `v0.11.0`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
 
 ## 快速开始
 
@@ -1129,7 +1130,8 @@ gitcode_api/
 ├── repos_discussions.go        # 仓库讨论、评论、回复 / Fork 同步 / 远程镜像 / 许可协议 / CLA
 ├── issues.go                   # Issue CRUD / 评论 / 标签 / 里程碑
 ├── issues_enhanced.go          # Issue 关联分支 / 看板字段 / 修改历史 / 企业状态 / 表态
-├── enterprise_issues.go        # 用户 / 组织 / 企业级 Issue、操作日志、关联 PR
+├── enterprise_issues.go        # 用户 / 组织级 Issue 助手、操作日志、关联 PR
+├── enterprise.go               # 企业面（v8 wire）：成员/里程碑/标签/角色/自定义字段/Issue 过滤列表
 ├── pulls.go                    # Pull Request 全套 + 审查 / 测试 / 标签 / 企业 PR
 ├── pulls_enhanced.go           # PR 关联 Issue / 测试人管理 / 评审人 / 讨论回复 / 修改历史 / 表态
 ├── branches.go                 # 分支 / 保护分支 / 提交 / 比较
@@ -1182,7 +1184,7 @@ gitcode_api/
 | 保护标签 | 5 | ✅ 完整 |
 | Release 增强 | 8 | ✅ 完整 |
 | Webhook | 5 CRUD + 5 解析 | ✅ 完整 |
-| 组织 / 企业 | 40+ | ✅ 完整 |
+| 组织 | 40+ | ✅ 完整 |
 | 企业里程碑 / 标签 / 自定义字段 | 14 | ✅ 完整 |
 | 看板 (Dashboard) | 7 | ✅ 完整 |
 | Actions/CI (v8 工作流/运行/Jobs/日志/Artifact/Runner) | 22 | ✅ 完整(v8 wire,对照 docs.gitcode.com) |

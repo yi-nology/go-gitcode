@@ -27,20 +27,3 @@ func (c *Client) ReplaceIssueLabels(ctx context.Context, owner, repo string, num
 func (c *Client) RemoveAllIssueLabels(ctx context.Context, owner, repo string, number int) error {
 	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/issues/%d/labels", owner, repo, number), nil, nil)
 }
-
-type EnterpriseLabel struct {
-	ID        int64  `json:"id"`
-	Name      string `json:"name"`
-	Color     string `json:"color"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-}
-
-func (c *Client) ListEnterpriseLabels(ctx context.Context, enterprise string) ([]*EnterpriseLabel, error) {
-	var labels []*EnterpriseLabel
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/labels", enterprise), nil, &labels)
-	if err != nil {
-		return nil, err
-	}
-	return labels, nil
-}

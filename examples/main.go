@@ -195,10 +195,10 @@ func main() {
 	// ============================================================
 	// 12. 企业 API 示例
 	// ============================================================
-	enterprise := "my-enterprise"
+	enterpriseID := "12345" // v8 企业面按数字 id 寻址（GetOrgEnterprise 可查组织关联企业的 id）
 
 	// 企业里程碑
-	milestones, err := client.ListEnterpriseMilestones(ctx, enterprise, gitcode.ListMilestonesOptions{})
+	milestones, err := client.ListEnterpriseMilestones(ctx, enterpriseID, gitcode.ListOptions{})
 	if err != nil {
 		fmt.Printf("获取企业里程碑失败: %v\n", err)
 	} else {
@@ -206,7 +206,7 @@ func main() {
 	}
 
 	// 企业自定义角色
-	roles, err := client.ListEnterpriseCustomizedRoles(ctx, enterprise)
+	roles, err := client.ListEnterpriseCustomizedRoles(ctx, enterpriseID)
 	if err != nil {
 		fmt.Printf("获取企业角色失败: %v\n", err)
 	} else {

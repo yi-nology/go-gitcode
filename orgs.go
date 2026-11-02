@@ -159,52 +159,6 @@ func (c *Client) ExitOrganization(ctx context.Context, org string) error {
 	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/user/memberships/orgs/%s", org), nil, nil)
 }
 
-type EnterpriseMember struct {
-	User       *User  `json:"user"`
-	URL        string `json:"url"`
-	Active     bool   `json:"active"`
-	Role       string `json:"role"`
-	Enterprise *struct {
-		ID  int64  `json:"id"`
-		URL string `json:"url"`
-	} `json:"enterprise"`
-}
-
-func (c *Client) ListEnterpriseMembers(ctx context.Context, enterprise, role string, opts ListOptions) ([]*EnterpriseMember, error) {
-	var members []*EnterpriseMember
-	query := opts.toQuery()
-	if role != "" {
-		query += "&role=" + role
-	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/members?%s", enterprise, query), nil, &members)
-	if err != nil {
-		return nil, err
-	}
-	return members, nil
-}
-
-func (c *Client) GetEnterpriseMember(ctx context.Context, enterprise, username string) (*EnterpriseMember, error) {
-	var member EnterpriseMember
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/members/%s", enterprise, username), nil, &member)
-	if err != nil {
-		return nil, err
-	}
-	return &member, nil
-}
-
-type UpdateEnterpriseMemberOptions struct {
-	Role string `json:"role"`
-}
-
-func (c *Client) UpdateEnterpriseMember(ctx context.Context, enterprise, username string, opts UpdateEnterpriseMemberOptions) (*EnterpriseMember, error) {
-	var member EnterpriseMember
-	err := c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/enterprises/%s/members/%s", enterprise, username), opts, &member)
-	if err != nil {
-		return nil, err
-	}
-	return &member, nil
-}
-
 type IssueExtendSetting struct {
 	TypeName string `json:"type_name"`
 	TypeID   int    `json:"type_id"`

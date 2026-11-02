@@ -45,21 +45,6 @@ func TestListIssueModifyHistory(t *testing.T) {
 	}
 }
 
-func TestListEnterpriseIssueStatuses(t *testing.T) {
-	client, server := newTestServer(jsonResponse(200, []*EnterpriseIssueStatus{
-		{ID: 1, Name: "Open"}, {ID: 2, Name: "Closed"},
-	}))
-	defer server.Close()
-
-	statuses, err := client.ListEnterpriseIssueStatuses(context.Background(), "my-enterprise")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if len(statuses) != 2 {
-		t.Errorf("expected 2 statuses, got %d", len(statuses))
-	}
-}
-
 func TestListIssueUserReactions(t *testing.T) {
 	client, server := newTestServer(jsonResponse(200, []*IssueUserReaction{
 		{ID: 1, Content: "+1"},

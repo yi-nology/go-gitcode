@@ -89,29 +89,6 @@ func (c *Client) ListIssueCommentModifyHistory(ctx context.Context, owner, repo 
 	return history, nil
 }
 
-// --- Enterprise Issue Statuses ---
-
-// EnterpriseIssueStatus represents an enterprise-level issue status.
-type EnterpriseIssueStatus struct {
-	ID        int64  `json:"id"`
-	Name      string `json:"name"`
-	Color     string `json:"color,omitempty"`
-	Sort      int    `json:"sort,omitempty"`
-	IsDefault bool   `json:"is_default,omitempty"`
-}
-
-// ListEnterpriseIssueStatuses lists all enterprise issue statuses.
-//
-// GET /enterprises/{enterprise}/issue-statuses
-func (c *Client) ListEnterpriseIssueStatuses(ctx context.Context, enterprise string) ([]*EnterpriseIssueStatus, error) {
-	var statuses []*EnterpriseIssueStatus
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/issue-statuses", enterprise), nil, &statuses)
-	if err != nil {
-		return nil, err
-	}
-	return statuses, nil
-}
-
 // --- Issue User Reactions (separate from emoji reactions) ---
 
 // IssueUserReaction represents a user's reaction to an issue.

@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.11.0] - 2026-11-02
+
+### Fixed / Changed (breaking)
+- **Enterprise 面整体重写为 v8 wire（对照 docs.gitcode.com "Enterprise" 分类）**。
+  与 Actions 同款虚构：GitCode 的 Enterprise API 只有 v8 版本，旧面的
+  /api/v5 名字寻址路径（/enterprises/{name}/...）对真实服务只会 404。
+  v8 按数字企业 id 寻址（GetOrgEnterprise 查组织关联企业的 id），且
+  wire 细节与 v5 形状系统性不同：邀请走 /memberships/{username}、标签
+  是单数 /label、成员权限更新（PUT /members/{username}）为 v8 新增、
+  自定义角色挂单数 /enterprise/{id}/customized_roles、组织关联是
+  /org/{org}/enterprise（单数 org）、Issue 列表是 POST 过滤查询、
+  里程碑带 projects 关联与 %Y-%m-%d 日期。
+  - 保留并重写（文档齐）：里程碑 CRUD、标签 CRUD、成员
+    邀请/列表/查/改权限/删（删支持多用户名逗号段）、自定义角色、
+    Issue 自定义字段（issue_extend_field）、Issue 过滤列表、组织关联；
+  - **移除**（v8 无文档，不留猜测形状）：企业 Issue 评论列表、企业
+    Issue 标签列表、企业 Issue 状态列表、里程碑仓库列表；
+  - **新增**（v8 文档有、旧面没有）：UpdateEnterpriseMemberPermission；
+  - 文档损坏处显式标注：label 端点的响应示例在文档里是复制粘贴错误
+    （issue/自定义字段样例），响应模型按已文档请求契约取最小字段集，
+    待 live 验证后扩充；成员 permissions 按 FlexBool 容忍
+    schema（integer）与示例（boolean）的冲突。
+  - v8 与 actions 共用 doV8Request/doRequestAt 管道；enterprise_issues.go
+    剥离 enterprise 方法后仅存用户/组织级 Issue 助手（查询拼接顺带
+    改 url.Values 转义）。
+  - 9 个钉形测试：v8 base、单复数前缀、CRUD 动词、请求体（邀请
+    permission+role_id、label description 恒发、Issue 过滤+分页默认）、
+    FlexBool 容忍、多用户名删除段。
+
+### Migration notes (v0.10.x → v0.11.0)
+- 企业面全部方法改数字企业 id 寻址（string 形参）：`InviteEnterpriseMember`
+  → 返回 EnterpriseMember、`UpdateEnterpriseMember` →
+  `UpdateEnterpriseMemberPermission`、`ListEnterpriseMembers` 参数收窄、
+  `DeleteEnterpriseMember` 改 variadic 多用户名；类型面
+  EnterpriseCustomizedRole/EnterpriseMilestone/EnterpriseLabel 等字段
+  对齐 v8 文档（字符串时间戳/日期）。企业 Issue 评论/标签/状态与
+  里程碑仓库四个方法无 v8 等价物。
+
 ## [v0.10.0] - 2026-11-02
 
 ### Fixed / Changed (breaking)
