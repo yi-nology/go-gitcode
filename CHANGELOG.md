@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.12.0] - 2026-11-02
+
+### Fixed
+- **纠偏 v0.11.0 的过度删除**：全量 sitemap diff（docs.gitcode.com 316 个
+  API 文档页 vs SDK 全部路径）证实企业 Issue 评论/标签/状态列表与单 Issue
+  查询在 **v5 文档中存在**——按 v5 文档回迁为 enterprise_v5.go（v5 base +
+  v5 Issue 形状，逐方法标注文档 slug 出处；v8 主面不动）。 企业 Issue 的
+  GET 列表（v5）与 POST 过滤列表（v8）同存，v8 为主入口。
+- **Issue→PR 链接拼写按文档修正**：`pull_requests` → `pull-requests`
+  （repos/enterprise/org 三处链接 + 仓库域 Issue 链接），文档 slug 一致
+  使用连字符形式。
+
+### Added
+- `docs/wire-provenance.md`：SDK 三分支方言（v5 文档化 / Gitea 血统未
+  文档化 / 确认虚构）的逐文件分类台账，含复跑审计的 diff 规则。分类
+  决定改/留/删口径：Gitea 血统面（statuses/deploy keys/reactions/
+  timeline 族/wiki/refs 等）在真 token live 验证前不改不删。
+
 ## [v0.11.0] - 2026-11-02
 
 ### Fixed / Changed (breaking)

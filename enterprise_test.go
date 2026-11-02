@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -207,5 +208,76 @@ func TestListEnterpriseIssues_V8PostBody(t *testing.T) {
 	}
 	if !strings.HasPrefix(cap.Path, "/api/v8/") {
 		t.Errorf("enterprise must hit the v8 base: %s", cap.Path)
+	}
+}
+
+// --- v5-legacy enterprise endpoints (enterprise_v5.go) ---
+
+func TestEnterpriseV5Legacy_Wire(t *testing.T) {
+	newV5 := func(body string, capture func(*http.Request)) *Client {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if capture != nil {
+				capture(r)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(body))
+		}))
+		t.Cleanup(server.Close)
+		return NewClientWithBaseURL(server.URL+"/api/v5", "test-token")
+	}
+
+	ctx := context.Background()
+
+	statuses, err := newV5(`[{"id":1,"name":"open","is_default":true}]`, func(r *http.Request) {
+		if r.URL.Path != "/api/v5/enterprises/42/issue-statuses" {
+			t.Errorf("statuses path = %s", r.URL.Path)
+		}
+	}).ListEnterpriseIssueStatuses(ctx, "42")
+	if err != nil || len(statuses) != 1 || !statuses[0].IsDefault {
+		t.Errorf("statuses: %v %+v", err, statuses)
+	}
+
+	issue, err := newV5(`{"number":3,"title":"bug"}`, func(r *http.Request) {
+		if r.URL.Path != "/api/v5/enterprises/42/issues/3" {
+			t.Errorf("issue path = %s", r.URL.Path)
+		}
+	}).GetEnterpriseIssue(ctx, "42", 3)
+	if err != nil || issue.Title != "bug" {
+		t.Errorf("issue: %v %+v", err, issue)
+	}
+
+	comments, err := newV5(`[{"id":9,"body":"hi"}]`, func(r *http.Request) {
+		if r.URL.Path != "/api/v5/enterprises/42/issues/3/comments" {
+			t.Errorf("comments path = %s", r.URL.Path)
+		}
+	}).ListEnterpriseIssueComments(ctx, "42", 3, ListOptions{})
+	if err != nil || len(comments) != 1 || comments[0].Body != "hi" {
+		t.Errorf("comments: %v %+v", err, comments)
+	}
+
+	labels, err := newV5(`[{"id":3,"name":"bug"}]`, func(r *http.Request) {
+		if r.URL.Path != "/api/v5/enterprises/42/issues/7/labels" {
+			t.Errorf("labels path = %s", r.URL.Path)
+		}
+	}).ListEnterpriseIssueLabels(ctx, "42", 7)
+	if err != nil || len(labels) != 1 || labels[0].Name != "bug" {
+		t.Errorf("labels: %v %+v", err, labels)
+	}
+}
+
+// The issue→PR links use the documented hyphen spelling (v0.12.0: was the
+// Gitee-style underscore).
+func TestIssueLinkedPRs_HyphenSpelling(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/v5/repos/o/r/issues/3/pull-requests" {
+			t.Errorf("path = %s (want the documented pull-requests spelling)", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`[]`))
+	}))
+	defer server.Close()
+	client := NewClientWithBaseURL(server.URL+"/api/v5", "test-token")
+	if _, err := client.GetIssueLinkedPRs(context.Background(), "o", "r", 3); err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }

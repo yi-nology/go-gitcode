@@ -91,7 +91,7 @@ func (c *Client) GetIssueOperateLogs(ctx context.Context, owner, repo string, nu
 
 func (c *Client) GetIssueLinkedPRs(ctx context.Context, owner, repo string, number int) ([]*PullRequest, error) {
 	var prs []*PullRequest
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/%d/pull_requests", owner, repo, number), nil, &prs)
+	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/%d/pull-requests", owner, repo, number), nil, &prs)
 	if err != nil {
 		return nil, err
 	}
