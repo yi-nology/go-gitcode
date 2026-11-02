@@ -166,29 +166,29 @@ func main() {
 	// token, err = oauth.RefreshToken(ctx, token.RefreshToken)
 
 	// ============================================================
-	// 11. Actions/CI 示例
+	// 11. Actions/CI 示例（v8 流水线 wire）
 	// ============================================================
 	workflows, err := client.ListActionWorkflows(ctx, "owner", "repo", gitcode.ListOptions{})
 	if err != nil {
 		fmt.Printf("获取工作流失败: %v\n", err)
 	} else {
-		fmt.Printf("\n工作流列表: %d 个\n", len(workflows))
-		for _, wf := range workflows {
+		fmt.Printf("\n工作流列表: %d 个\n", workflows.TotalCount)
+		for _, wf := range workflows.Workflows {
 			fmt.Printf("  - %s (%s)\n", wf.Name, wf.State)
 		}
 	}
 
 	// 获取运行记录
-	runs, err := client.ListActionRuns(ctx, "owner", "repo", gitcode.ListActionRunsOptions{
+	runs, err := client.ListActionRuns(ctx, "owner", "repo", gitcode.ListWorkflowRunsOptions{
 		ListOptions: gitcode.ListOptions{PerPage: 5},
-		Status:      "completed",
+		Status:      "COMPLETED",
 	})
 	if err != nil {
 		fmt.Printf("获取运行记录失败: %v\n", err)
 	} else {
-		fmt.Printf("\n最近运行记录: %d 个\n", len(runs))
-		for _, run := range runs {
-			fmt.Printf("  - #%d %s (%s)\n", run.ID, run.Name, run.Conclusion)
+		fmt.Printf("\n最近运行记录: %d 个\n", runs.TotalCount)
+		for _, run := range runs.WorkflowRuns {
+			fmt.Printf("  - %s %s (%s)\n", run.WorkflowRunID, run.Title, run.Status)
 		}
 	}
 

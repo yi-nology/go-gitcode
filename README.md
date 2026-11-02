@@ -39,7 +39,7 @@ Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对
 - **Release 增强** — 最新 Release、上传 URL、下载附件
 - **企业** — 企业成员/里程碑/标签/自定义角色/Issue 自定义字段/组织关联企业
 - **看板 (Dashboard)** — 组织看板 CRUD、看板条目管理
-- **Actions/CI** — 工作流/运行记录/Jobs/日志/Artifacts/Runners/Runner Groups
+- **Actions/CI (v8 流水线 wire)** — 工作流/手动触发/运行记录(含 stages→jobs→steps 树)/Stop·Retry·Rerun/Jobs/增量日志/Artifacts/Runners/Runner Groups——GitCode 的 Actions API 只有 v8 版本,本模块走自动派生的 `/api/v8` base
 - **类型友好** — `FlexInt`/`FlexString`/`NullableTime` 等 JSON 容错类型,适配 GitCode 返回值类型漂移
 
 ## 环境要求
@@ -53,7 +53,7 @@ Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对
 go get github.com/yi-nology/go-gitcode@latest
 ```
 
-当前最新版本为 `v0.9.0`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
+当前最新版本为 `v0.10.0`,完整版本历史见 [releases](https://github.com/yi-nology/go-gitcode/releases)。
 
 ## 快速开始
 
@@ -1185,7 +1185,7 @@ gitcode_api/
 | 组织 / 企业 | 40+ | ✅ 完整 |
 | 企业里程碑 / 标签 / 自定义字段 | 14 | ✅ 完整 |
 | 看板 (Dashboard) | 7 | ✅ 完整 |
-| Actions/CI (工作流/Runner/Artifact) | 23 | ✅ 完整 |
+| Actions/CI (v8 工作流/运行/Jobs/日志/Artifact/Runner) | 22 | ✅ 完整(v8 wire,对照 docs.gitcode.com) |
 | 组织团队 | 12 | ✅ 完整 |
 | 搜索 | 3 | ✅ 完整 |
 | 协作者 | 5 | ✅ 完整 |

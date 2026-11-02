@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.10.0] - 2026-11-02
+
+### Fixed / Changed (breaking)
+- **Actions/CI 面整体重写为 v8 wire（对照 docs.gitcode.com "Actions" 分类）**。
+  GitCode 的 Actions API 只有 v8 版本——旧面的 GitHub 形状 `/api/v5/...`
+  路径对真实服务只会 404（同 org_hooks 的虚构形态，但端点本身有文档、
+  因此重写而非删除）。v8 是完全不同的领域模型：流水线 stages→jobs→steps
+  树、字符串 ID、秒级时间戳、状态词表 COMPLETED/RUNNING/FAILED/CANCELED/
+  IGNORED/PAUSED/SUSPEND、触发事件 MR/Push/Manual。
+  - v8 base 由配置 base 自动派生（`…/api/v5` → `…/api/v8`，见
+    `v8BaseURL`；无 /v5 后缀的自有部署按原样透传并在文档注明前提）；
+  - 方法面（22 个）：`ListActionWorkflows`（信封 `{total_count, workflows}`）、
+    `DispatchActionWorkflow`（替代 `RunActionWorkflow`，body
+    `{ref, inputs}`，inputs 文档 required 恒发）、`ValidateActionWorkflowYAML`
+    （`[]byte` 自动 base64；替代 `ValidateWorkflowYAML`）、
+    `ListActionRuns`（event/status/branch/executor/pull_request_id/
+    workflow_id/workflow_name/startTime/endTime 过滤）、`GetActionRun`
+    （含 stage 树）、`StopActionRun`/`RetryActionRun`/`RerunActionRun`
+    （`{success}` 回包）、`ListActionRunJobs`、`GetActionJob`（v8 把 job
+    挂在 runs/{run_id}/jobs/{job_id} 下——旧 `/actions/jobs/{id}` 路径
+    不存在）、`GetActionJobLogs`（增量分页 body
+    `{step_id, offset, limit, sort}`；替代旧 `GetActionJobLogs`/
+    `GetActionJobStepLogs`）、`DownloadActionJobLogs`、
+    `ListActionArtifacts`（name 模糊过滤/sort/direction）、
+    `ListActionRunArtifacts`、`GetActionArtifact`、`DeleteActionArtifact`、
+    `DownloadActionArtifact`（`{archive_format}` 路径段）、
+    `ListRepoActionRunners`/`ListRepoSharedActionRunners`/
+    `ListRepoK8SRunners`/`ListRepoSharedK8SRunners`、
+    `ListOrgActionRunnerGroups`/`GetActionRunnerGroup`；
+  - **移除**：旧 `ListRunnerGroupHostRunners`/`ListRunnerGroupK8SRunners`/
+    `ListRunnerGroupRepos`（v8 从未文档化这些子资源路径，不留猜测形状）；
+    shared/K8S runner 变体沿用 repo host-runners 信封（注释标注为同信封
+    假设，schema 页未单列）。
+  - client 执行核心去重：`doRequestAt(base,…)`/`doRawRequestAt(base,…)`
+    为 v5/v8 共用（旧 `doRequestWithHeaders` 随之删除）。
+  - 22 个 httptest 用例钉住 v8 base 派生、路径、信封解析（含大量 null
+    字段的容错）、关键请求体（dispatch inputs 恒发、validate base64、
+    日志分页 body）。
+
+### Migration notes (v0.9.x → v0.10.0)
+- Actions 旧类型/方法（GitHub 形状 `ActionRun{ID int64, Conclusion}` 等）
+  → v8 类型（`WorkflowRun{WorkflowRunID string, Status}` 等）。
+  `RunActionWorkflow` → `DispatchActionWorkflow`；`ValidateWorkflowYAML`
+  → `ValidateActionWorkflowYAML`；`ListActionJobs`/`GetActionJob` →
+  `ListActionRunJobs`/`GetActionJob`（增加 runID 参数）；
+  runner-group 子资源三方法无 v8 等价物。
+
 ## [v0.9.0] - 2026-11-02
 
 ### Removed

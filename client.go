@@ -143,24 +143,26 @@ func (c *Client) setAuthHeader(req *http.Request) {
 
 // doRequest executes an HTTP request and unmarshals the result.
 func (c *Client) doRequest(ctx context.Context, method, path string, body interface{}, result interface{}) error {
-	_, err := c.doRequestWithHeaders(ctx, method, path, body, result)
-	return err
+	return c.doRequestAt(ctx, c.baseURL, method, path, body, result)
 }
 
-// doRequestWithHeaders executes an HTTP request and returns the response headers.
-func (c *Client) doRequestWithHeaders(ctx context.Context, method, path string, body interface{}, result interface{}) (http.Header, error) {
+// doRequestAt executes an HTTP request against an explicit base URL and
+// unmarshals the result — the shared execution core behind the v5 API
+// (doRequest) and the v8 API (actions_v8.go), whose paths differ only by
+// the base.
+func (c *Client) doRequestAt(ctx context.Context, base, method, path string, body interface{}, result interface{}) error {
 	var reqBody io.Reader
 	if body != nil {
 		raw, err := json.Marshal(body)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		reqBody = bytes.NewReader(raw)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, reqBody)
+	req, err := http.NewRequestWithContext(ctx, method, base+path, reqBody)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	c.setAuthHeader(req)
@@ -168,39 +170,68 @@ func (c *Client) doRequestWithHeaders(ctx context.Context, method, path string, 
 
 	// Run request hooks
 	if err := c.runRequestHooks(req); err != nil {
-		return nil, fmt.Errorf("request hook error: %w", err)
+		return fmt.Errorf("request hook error: %w", err)
 	}
 
 	// Execute request with retry
 	resp, err := c.doRequestWithRetry(ctx, req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
 	// Run response hooks
 	if err := c.runResponseHooks(resp); err != nil {
-		return nil, fmt.Errorf("response hook error: %w", err)
+		return fmt.Errorf("response hook error: %w", err)
 	}
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if resp.StatusCode >= 400 {
-		return nil, newAPIError(method, path, resp.StatusCode, string(respBody))
+		return newAPIError(method, path, resp.StatusCode, string(respBody))
 	}
 
 	if result != nil && resp.StatusCode != http.StatusNoContent {
 		if len(respBody) > 0 {
 			if err := json.Unmarshal(respBody, result); err != nil {
-				return nil, err
+				return err
 			}
 		}
 	}
 
-	return resp.Header, nil
+	return nil
+}
+
+// doRawRequestAt executes an HTTP request against an explicit base URL and
+// returns the raw response body (binary downloads: artifacts, log archives).
+func (c *Client) doRawRequestAt(ctx context.Context, base, method, path string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, method, base+path, nil)
+	if err != nil {
+		return nil, err
+	}
+	c.setAuthHeader(req)
+	if err := c.runRequestHooks(req); err != nil {
+		return nil, fmt.Errorf("request hook error: %w", err)
+	}
+	resp, err := c.doRequestWithRetry(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if err := c.runResponseHooks(resp); err != nil {
+		return nil, fmt.Errorf("response hook error: %w", err)
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 400 {
+		return nil, newAPIError(method, path, resp.StatusCode, string(body[:min(len(body), 200)]))
+	}
+	return body, nil
 }
 
 // doRawRequest executes a raw HTTP request and returns the response body.
