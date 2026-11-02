@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-
 // getTestClient returns a client for the live-API tests. The suite is
 // env-gated: without GITCODE_TOKEN every live test skips, so plain
 // `go test` (and CI's unit step) stays hermetic — live credentials must
