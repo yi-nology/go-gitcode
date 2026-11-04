@@ -1221,34 +1221,11 @@ func TestBranchProtection(t *testing.T) {
 
 	defaultBranch := getRepoDefaultBranch(t, client, owner, repoName, repo)
 
-	// Create branch protection
-	rule, err := client.CreateBranchProtection(ctx, owner, repoName, CreateBranchProtectionOptions{
-		Name:                     defaultBranch,
-		RequiredStatusChecks:     false,
-		RequiredApprovingReviews: 1,
-		AllowForcePushes:         false,
-		AllowDeletions:           false,
-	})
-	if err != nil {
-		t.Logf("CreateBranchProtection failed: %v (may not be supported)", err)
-	} else {
-		t.Logf("Created branch protection: %s", rule.Name)
-
-		// List protections
-		rules, err := client.ListBranchProtections(ctx, owner, repoName)
-		if err != nil {
-			t.Logf("ListBranchProtections failed: %v", err)
-		} else {
-			t.Logf("Branch protections: %d", len(rules))
-		}
-
-		// Delete protection
-		err = client.DeleteBranchProtection(ctx, owner, repoName, defaultBranch)
-		if err != nil {
-			t.Logf("DeleteBranchProtection failed: %v", err)
-		} else {
-			t.Logf("Deleted branch protection for: %s", defaultBranch)
-		}
+	// Protection family live shape (probe round 2026-11-04): PUT/DELETE on
+	// /branches/{name}/setting exist (business-error routing); no API
+	// create or list exists — protection is web-UI-managed.
+	if err := client.DeleteBranchProtection(ctx, owner, repoName, defaultBranch); err != nil {
+		t.Logf("DeleteBranchProtection (no protection configured): %v", err)
 	}
 }
 

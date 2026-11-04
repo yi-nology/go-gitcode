@@ -217,13 +217,13 @@ func main() {
 	// 13. 看板 API 示例
 	// ============================================================
 	org := "my-org"
-	boards, err := client.ListKanbanBoards(ctx, org, gitcode.ListOptions{})
+	boards, err := client.ListKanbanBoards(ctx, org, gitcode.ListKanbanBoardsOptions{})
 	if err != nil {
 		fmt.Printf("获取看板失败: %v\n", err)
 	} else {
-		fmt.Printf("\n看板列表: %d 个\n", len(boards))
-		for _, board := range boards {
-			fmt.Printf("  - %s (ID: %d)\n", board.Name, board.ID)
+		fmt.Printf("\n看板列表: %d 个\n", boards.AllCount)
+		for _, board := range boards.Content {
+			fmt.Printf("  - %s (ID: %s)\n", board.Name, board.ID)
 		}
 	}
 

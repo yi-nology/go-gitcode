@@ -18,7 +18,19 @@
 | **活（文档化，对照证实）** | `/repos/{o}/{r}/commits`、`/issues`、`/pulls`、`/repos/{o}/{r}/notifications`、`/users/{login}/orgs`、`/user/repos` |
 
 **关键教训：文档的 slug 拼写（连字符）与文档分类（user-reactions）都会错；
-唯一权威是 live 服务。** 三处文档谎言已实证：pull-requests（真 wire 是
+唯一权威是 live 服务。** 第二轮探针（2026-11-04）补充方法论：GitCode 的
+404 有三种 body——框架级 `{"error_msg":"404 Route Not Found"}`（路由不存
+在）、GitCode 业务错误 `{"error_code":404,...}`（**路由存在**）、Spring 形
+`{"timestamp":...}`（歧义，需 verb 矩阵排除）——body 本身就是路由存在性
+的判据；文档化路由同样会死（/protect-branches 有页但 404）。
+
+### 第二轮探针补充（2026-11-04）
+
+| 结论 | 端点 |
+|---|---|
+| **活（业务错误路由实证）** | `PUT/DELETE /repos/{o}/{r}/branches/{name}/setting`（分支保护更新/移除，要求已有保护；body 形状未 live 校验）、`/org/{org}/kanban/list`（计数信封）、`/org/{org}/kanban/{id}/detail`、`/org/{org}/kanban/{id}/item_list`、`/org/{org}/kanban/{id}/add_item`、`/org/{org}/kanban/{id}/state`、`/org/{org}/kanban/{id}/remove_item`（看板全族，KANBAN_NON_EXISTENT 业务路由实证；id 是字符串） |
+| **死（live 404，含文档化）** | `/protect-branches`（有文档页但 GET/POST 全死）、`/branches/{name}/setting/new`、`/branches/{name}/wildcard/setting`、`/commits/{sha}/status`（combined）、全局 `/notifications` |
+| **活（文档化，live 200）** | `/compare/{base}...{head}`、`/git/trees/{sha}`、`/git/blobs/{blob_sha}`（用 commit SHA 探会 404，需真实 blob SHA）、`/search/repositories`、`/raw/{path}?ref=`、`/contents/{path}?ref=`、`/orgs/{org}/discuss`、`/pulls`、`/repos/{o}/{r}/notifications` | 三处文档谎言已实证：pull-requests（真 wire 是
 下划线）、user-reactions 列表（真 wire 无此路由）、Gitea 血统面（引擎
 并非照单全收 Gitea API）。
 

@@ -88,44 +88,8 @@ type ListBranchProtectionOptions struct {
 	ListOptions
 }
 
-type BranchProtectionRule struct {
-	ID                       int64  `json:"id"`
-	RepositoryID             int64  `json:"repository_id"`
-	Name                     string `json:"name"`
-	RequiredStatusChecks     bool   `json:"required_status_checks"`
-	RequiredApprovingReviews int    `json:"required_approving_reviews"`
-	AllowForcePushes         bool   `json:"allow_force_pushes"`
-	AllowDeletions           bool   `json:"allow_deletions"`
-}
-
-func (c *Client) ListBranchProtections(ctx context.Context, owner, repo string) ([]*BranchProtectionRule, error) {
-	var rules []*BranchProtectionRule
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/protect-branches", owner, repo), nil, &rules)
-	if err != nil {
-		return nil, err
-	}
-	return rules, nil
-}
-
-type CreateBranchProtectionOptions struct {
-	Name                     string `json:"name"`
-	RequiredStatusChecks     bool   `json:"required_status_checks"`
-	RequiredApprovingReviews int    `json:"required_approving_reviews"`
-	AllowForcePushes         bool   `json:"allow_force_pushes"`
-	AllowDeletions           bool   `json:"allow_deletions"`
-}
-
-func (c *Client) CreateBranchProtection(ctx context.Context, owner, repo string, opts CreateBranchProtectionOptions) (*BranchProtectionRule, error) {
-	var rule BranchProtectionRule
-	err := c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/branches/%s/setting/new", owner, repo, opts.Name), opts, &rule)
-	if err != nil {
-		return nil, err
-	}
-	return &rule, nil
-}
-
 func (c *Client) DeleteBranchProtection(ctx context.Context, owner, repo, name string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/branches/%s/wildcard/setting", owner, repo, name), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/branches/%s/setting", owner, repo, name), nil, nil)
 }
 
 type CommitComparison struct {

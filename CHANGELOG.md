@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.14.0] - 2026-11-04
+
+### Fixed / Changed (breaking)
+- **Dashboard kanban 面整面重路由（live 实证）**：真 wire 是
+  \`/org/{org}/kanban/...\`（单数 org）——list（计数信封
+  \`{close_count,open_count,all_count,content}\`）、\`{id}/detail\`、
+  \`{id}/item_list\`、\`{id}/add_item\`、\`{id}/state\`（body \`{state}\`）、
+  \`{id}/remove_item\`（数组 body）。旧实现的 \`/orgs/{org}/kanban/boards\`
+  族对真实服务全 404；探针实证：新路由全部命中业务逻辑
+  （KANBAN_NON_EXISTENT），旧路由框架 404。board id 在 wire 上是字符串；
+  \`UpdateKanbanBoardItem\` 移除（旧路由死，无 live 等价物——repo 侧
+  item 值更新走文档化的 issues-number-kanban-values，已有
+  \`UpdateIssueKanbanValues\`）。
+- **分支保护面收缩（live 实证）**：真 wire 只有 \`PUT/DELETE
+  /branches/{name}/setting\`（要求已有保护；无创建路由、无列表路由——
+  /protect-branches 有文档页但 live 404，/setting/new 与
+  /wildcard/setting 死）。移除 \`ListBranchProtections\` 与
+  \`CreateBranchProtection\`；\`DeleteBranchProtection\` 修正到活路由
+  \`/branches/{name}/setting\`；\`UpdateBranchProtection\` 本就在活路由上
+  （body 形状未 live 校验，注释标注）。保护管理是 web-UI 管的。
+- **方法补充**：git/blobs 用真实 blob SHA 探 200（此前误用 commit SHA）；
+  compare/raw/contents/search/discuss 全部 live 200。
+
+### Migration notes (v0.13.x → v0.14.0)
+- 看板方法签名全变（id 字符串化、信封化、item ref 数组化）；
+  \`UpdateKanbanBoardItem\`/\`KanbanBoardStatus\` 类型移除。
+- \`ListBranchProtections\`/\`CreateBranchProtection\` 无 API 等价物；
+  \`DeleteBranchProtection\` 语义不变、路由修正。
+
 ## [v0.13.0] - 2026-11-03
 
 ### Fixed
