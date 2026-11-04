@@ -8,7 +8,7 @@ Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对
 ## 功能特性
 
 - **认证** — Bearer Token / PRIVATE-TOKEN Header / `access_token` Query 三种鉴权 + OAuth 2.0 授权码流程
-- **仓库** — 创建/更新/删除/Fork/归档/转让,组织仓库,文件 CRUD,Tree/Blob,Raw,文件&图片上传,Fork 同步,远程镜像,许可协议,CLA
+- **仓库** — 创建/更新/删除/Fork/转让,组织仓库,文件 CRUD,Tree/Blob,Raw,文件&图片上传,Fork 同步,远程镜像,许可协议,CLA
 - **Issue** — 仓库 Issue CRUD、评论、标签、里程碑、操作日志、关联 PR、时间线、订阅者、依赖关系、关联分支、看板字段、修改历史;用户/组织/企业级 Issue 查询
 - **Pull Request** — CRUD、合并、文件/提交/评论/审查、标签、审查人/测试人分配、操作日志、关联 Issue、Diff/Patch、讨论回复、检视意见、修改历史
 - **讨论** — 仓库/组织级讨论、评论、回复
@@ -33,15 +33,27 @@ Go 语言的 [GitCode](https://gitcode.com) / AtomGit API 客户端库,提供对
 - **仓库邀请** — 接受/拒绝仓库邀请
 - **模板** — Issue 模板、PR 合并模板、Gitignore/License/Label 模板
 - **Markdown** — Markdown 渲染
-- **仓库统计** — 参与度、代码频率、提交活动、Punch Card
-- **仓库归档** — 下载仓库压缩包
+- **仓库统计** — 下载统计、订阅者、事件、转让、CLA、仓库自定义角色（参与度/代码频率/提交活动/Punch Card 的 stats/* 路由 live 404，见台账）
 - **仓库设置** — Push 配置、PR 设置、模块开关、审查规则、下载统计
 - **保护标签** — 保护标签规则 CRUD
 - **Release 增强** — 最新 Release、上传 URL、下载附件
 - **企业** — 企业成员/里程碑/标签/自定义角色/Issue 自定义字段/组织关联企业
-- **看板 (Dashboard)** — 组织看板 CRUD、看板条目管理
+- **看板 (Dashboard)** — 组织看板列表/详情/条目/加条目/开闭/移除——live 实证真 wire 为 `/org/{org}/kanban/*`（单数 org、id 字符串化）
 - **Actions/CI (v8 流水线 wire)** — 工作流/手动触发/运行记录(含 stages→jobs→steps 树)/Stop·Retry·Rerun/Jobs/增量日志/Artifacts/Runners/Runner Groups——GitCode 的 Actions API 只有 v8 版本,本模块走自动派生的 `/api/v8` base
 - **类型友好** — `FlexInt`/`FlexString`/`NullableTime` 等 JSON 容错类型,适配 GitCode 返回值类型漂移
+
+## Wire 实证状态（2026-11-02~04 两轮 live 探针）
+
+SDK 内并存三种 wire 形态，逐文件分类与 live 探针证据（含 404 body 判据、
+探针方法）见 **[docs/wire-provenance.md](docs/wire-provenance.md)**：
+- **文档化 + live 证实**：仓库/分支/文件/commits/issues/pulls/labels/
+  milestones/releases/webhooks/users/orgs/search/仓库域通知/看板(v8 形)/
+  Actions(v8)/Enterprise(v8) 等;
+- **live 实证死路径**（方法保留仅作兼容，勿依赖）：commit status、
+  deploy keys、reactions、wiki、git refs/tags、模板族、stats 族、
+  invitations、全局通知、/user/orgs;
+- **确认虚构已删**：org hooks、v5 Actions、v5 Enterprise、webhook
+  secret/events。
 
 ## 环境要求
 
@@ -234,18 +246,19 @@ release, _  := client.CreateRelease(ctx, "owner", "repo", gitcode.CreateReleaseO
 client.DeleteRelease(ctx, "owner", "repo", release.TagName)
 ```
 
-### 仓库归档与统计
+### 仓库统计与元数据
 
 ```go
-// 下载仓库压缩包
-tarGz, _ := client.GetRepositoryArchive(ctx, "owner", "repo", "main.tar.gz")
-zip, _   := client.GetRepositoryArchive(ctx, "owner", "repo", "main.zip")
+// 下载统计（live 200）
+dl, _ := client.GetDownloadStatistics(ctx, "owner", "repo")
 
-// 仓库统计
-participation, _ := client.GetRepoParticipation(ctx, "owner", "repo")
-codeFreq, _      := client.GetRepoCodeFrequency(ctx, "owner", "repo")
-commitActivity, _ := client.GetRepoCommitActivity(ctx, "owner", "repo")
-punchCard, _      := client.GetRepoPunchCard(ctx, "owner", "repo")
+// 订阅者 / 事件 / CLA / 仓库自定义角色（live 200）
+subs, _  := client.ListWatchers(ctx, "owner", "repo")
+events, _ := client.ListRepoEvents(ctx, "owner", "repo", gitcode.ListOptions{})
+clas, _  := client.ListRepoCLAs(ctx, "owner", "repo")
+
+// 注意：归档与 stats/*（参与度/代码频率/提交活动/Punch Card）live 404，
+// 对应方法保留仅作兼容——见 docs/wire-provenance.md
 ```
 
 ### 仓库主题 (Topics)
@@ -544,13 +557,11 @@ client.CreateBranch(ctx, "owner", "repo", gitcode.CreateBranchOptions{
 })
 client.DeleteBranch(ctx, "owner", "repo", "dev")
 
-// 保护分支规则
-client.CreateBranchProtection(ctx, "owner", "repo", gitcode.CreateBranchProtectionOptions{
-    Name:                     "main",
-    RequiredApprovingReviews: 2,
-    AllowForcePushes:         false,
+// 保护分支（live 实证：只有 PUT/DELETE /branches/{name}/setting，
+// 要求已有保护；无 API 创建/列表——保护在 web-UI 管理）
+client.UpdateBranchProtection(ctx, "owner", "repo", "main", gitcode.UpdateBranchProtectionOptions{
+    Pusher: "user-login",
 })
-client.ListBranchProtections(ctx, "owner", "repo")
 client.DeleteBranchProtection(ctx, "owner", "repo", "main")
 
 // 提交
@@ -1132,9 +1143,10 @@ gitcode_api/
 ├── issues_enhanced.go          # Issue 关联分支 / 看板字段 / 修改历史 / 企业状态 / 表态
 ├── enterprise_issues.go        # 用户 / 组织级 Issue 助手、操作日志、关联 PR
 ├── enterprise.go               # 企业面（v8 wire）：成员/里程碑/标签/角色/自定义字段/Issue 过滤列表
+├── dashboard_kanban.go         # 看板（live wire /org/{org}/kanban/*）：列表/详情/条目/加移/开闭
 ├── pulls.go                    # Pull Request 全套 + 审查 / 测试 / 标签 / 企业 PR
 ├── pulls_enhanced.go           # PR 关联 Issue / 测试人管理 / 评审人 / 讨论回复 / 修改历史 / 表态
-├── branches.go                 # 分支 / 保护分支 / 提交 / 比较
+├── branches.go                 # 分支 / 提交 / 比较 / 保护分支 setting（PUT/DELETE）
 ├── webhooks.go                 # Webhook CRUD + 5 类事件解析
 ├── search.go                   # 搜索仓库 / Issue / 用户
 ├── users.go                    # SSH 公钥 / 邮箱 / 动态 / Star / Namespace
@@ -1180,26 +1192,26 @@ gitcode_api/
 | Issue 增强 (分支/看板/历史) | 8 | ✅ 完整 |
 | Pull Request | 40+ | ✅ 完整 |
 | PR 增强 (关联/评审/讨论/历史) | 15 | ✅ 完整 |
-| 分支 & 提交 | 17 | ✅ 完整 |
+| 分支 & 提交 | 15 | 保护分支仅 PUT/DELETE（live 实证无创建/列表） |
 | 保护标签 | 5 | ✅ 完整 |
 | Release 增强 | 8 | ✅ 完整 |
 | Webhook | 5 CRUD + 5 解析 | ✅ 完整 |
 | 组织 | 40+ | ✅ 完整 |
 | 企业里程碑 / 标签 / 自定义字段 | 14 | ✅ 完整 |
-| 看板 (Dashboard) | 7 | ✅ 完整 |
+| 看板 (Dashboard) | 6 | ✅ live wire `/org/{org}/kanban/*` |
 | Actions/CI (v8 工作流/运行/Jobs/日志/Artifact/Runner) | 22 | ✅ 完整(v8 wire,对照 docs.gitcode.com) |
 | 组织团队 | 12 | ✅ 完整 |
 | 搜索 | 3 | ✅ 完整 |
 | 协作者 | 5 | ✅ 完整 |
 | Topics | 4 | ✅ 完整 |
-| Commit Status | 3 | ✅ 完整 |
-| Deploy Keys | 4 | ✅ 完整 |
-| Git References | 6 | ✅ 完整 |
-| Reactions | 12 | ✅ 完整 |
-| Wiki | 5 | ✅ 完整 |
-| 通知 | 6 | ✅ 完整 |
-| 模板 | 7 | ✅ 完整 |
-| **总计** | **428** | ✅ |
+| Commit Status | 3 | ⚠️ live 404（方法保留兼容） |
+| Deploy Keys | 4 | ⚠️ live 404（方法保留兼容） |
+| Git References | 6 | ⚠️ live 404（方法保留兼容） |
+| Reactions | 12 | ⚠️ live 404（方法保留兼容） |
+| Wiki | 5 | ⚠️ live 404（方法保留兼容） |
+| 通知 | 6 | 仓库域 ✅ / 全局 ⚠️ live 404 |
+| 模板 | 7 | ⚠️ live 404（方法保留兼容） |
+| **总计** | **425** | 活路由见 Wire 实证状态 |
 
 ## 测试
 
