@@ -262,9 +262,9 @@ func (c *Client) FindActionRunByHeadSHA(ctx context.Context, owner, repo, sha st
 	if sha == "" {
 		return nil, errors.New("gitcode: head sha is required")
 	}
-	prune.ListOptions.PerPage = 100
+	prune.PerPage = 100
 	for page := 1; page <= maxFindRunPages; page++ {
-		prune.ListOptions.Page = page
+		prune.Page = page
 		resp, err := c.ListActionRuns(ctx, owner, repo, prune)
 		if err != nil {
 			return nil, err

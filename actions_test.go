@@ -2,9 +2,9 @@ package gitcode
 
 import (
 	"context"
-	"errors"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
