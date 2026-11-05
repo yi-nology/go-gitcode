@@ -328,10 +328,20 @@ func (c *Client) ReplacePullRequestLabels(ctx context.Context, owner, repo strin
 	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/pulls/%d/labels", owner, repo, number), labels, nil)
 }
 
+// AssignPullRequestReviewers 指派用户审查 PR。
+//
+// 语义警告：wire 路径是 /pulls/{n}/assignees（词表像经办人），但 GitCode
+// 文档标题写明这是「指派用户审查 Pull Request」——本方法命名忠于平台
+// 语义（审查人），与 GitHub/Gitea 的 assignee（经办人）语义相反。下游做
+// 跨平台 CR 指派人统一面时不要按 GitHub 血统把此方法接到 assignee 语义上。
+// assignees 是用户个人空间地址，逗号分隔。
 func (c *Client) AssignPullRequestReviewers(ctx context.Context, owner, repo string, number int, assignees string) error {
 	return c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/pulls/%d/assignees", owner, repo, number), map[string]string{"assignees": assignees}, nil)
 }
 
+// UnassignPullRequestReviewers 取消用户的 PR 审查指派。语义同
+// AssignPullRequestReviewers——wire 词表 assignees，平台语义是审查人，
+// 与 GitHub/Gitea 的 assignee（经办人）相反。
 func (c *Client) UnassignPullRequestReviewers(ctx context.Context, owner, repo string, number int, assignees string) error {
 	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/pulls/%d/assignees?assignees=%s", owner, repo, number, assignees), nil, nil)
 }
@@ -364,6 +374,10 @@ func (c *Client) ResetPullRequestTestStatus(ctx context.Context, owner, repo str
 	return c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s/pulls/%d/testers", owner, repo, number), body, nil)
 }
 
+// ResetPullRequestReviewStatus 重置 PR 审查状态。wire 路径词表是
+// assignees，但平台语义是「重置 Pull Request 审查的状态」（见
+// AssignPullRequestReviewers 的语义警告：词表 assignees、语义审查人，
+// 与 GitHub/Gitea 的经办人 assignee 相反）。
 func (c *Client) ResetPullRequestReviewStatus(ctx context.Context, owner, repo string, number int, resetAll bool) error {
 	body := map[string]interface{}{}
 	if resetAll {

@@ -24,6 +24,7 @@ package gitcode
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -230,6 +231,55 @@ func (c *Client) ListActionRuns(ctx context.Context, owner, repo string, opts Li
 		return nil, err
 	}
 	return &resp, nil
+}
+
+// maxFindRunPages caps the by-SHA scan (per_page=100 × 50 pages exceeds any
+// real run list; a server that keeps returning full pages must not spin the
+// walker forever).
+const maxFindRunPages = 50
+
+// ErrActionRunNotFound is returned by FindActionRunByHeadSHA when no run in
+// the scanned window carries the requested head_sha.
+var ErrActionRunNotFound = errors.New("gitcode: no action run matched head_sha")
+
+// FindActionRunByHeadSHA locates a run by commit SHA.
+//
+// The v8 wire has NO head_sha filter on the runs list: the documented query
+// set is event/status/branch/executor/pull_request_id/workflow_id/
+// workflow_name/page/per_page/startTime/endTime — head_sha appears only as
+// a response field (docs.gitcode.com "获取仓库所有的流水线的运行记录",
+// checked 2026-11-06). This helper therefore pages ListActionRuns with the
+// documented filters you pass in prune and matches head_sha client-side,
+// returning the first hit (the list is newest-first, so a fresh commit's
+// run usually sits on page 1).
+//
+// Pass every documented filter that fits your intent — Branch plus Status
+// for a CI-failure diagnosis, for instance — to keep the scan short; an
+// unpruned scan walks the repo's whole run history (capped at
+// maxFindRunPages pages, then it returns the last error of exhaustion).
+// Not-found surfaces as ErrActionRunNotFound (errors.Is).
+func (c *Client) FindActionRunByHeadSHA(ctx context.Context, owner, repo, sha string, prune ListWorkflowRunsOptions) (*WorkflowRun, error) {
+	if sha == "" {
+		return nil, errors.New("gitcode: head sha is required")
+	}
+	prune.ListOptions.PerPage = 100
+	for page := 1; page <= maxFindRunPages; page++ {
+		prune.ListOptions.Page = page
+		resp, err := c.ListActionRuns(ctx, owner, repo, prune)
+		if err != nil {
+			return nil, err
+		}
+		for _, run := range resp.WorkflowRuns {
+			if run != nil && run.HeadSHA == sha {
+				return run, nil
+			}
+		}
+		// Short page ⇒ last page; no hit in it means no hit anywhere.
+		if len(resp.WorkflowRuns) < 100 {
+			break
+		}
+	}
+	return nil, ErrActionRunNotFound
 }
 
 // WorkflowRunDetail is a run with its full stage → job → step tree. Pre

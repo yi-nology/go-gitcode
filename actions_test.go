@@ -2,6 +2,7 @@ package gitcode
 
 import (
 	"context"
+	"errors"
 	"encoding/base64"
 	"encoding/json"
 	"io"
@@ -370,5 +371,103 @@ func TestOrgActionRunnerGroups_V8(t *testing.T) {
 	}
 	if cap.Path != "/api/v8/orgs/my-org/actions/runner-groups/g1" || group.ID != "g1" || group.ShareAll {
 		t.Errorf("get group: %s %+v", cap.Path, group)
+	}
+}
+
+// FindActionRunByHeadSHA: the v8 wire has no head_sha filter, so the finder
+// pages the documented filters and matches client-side. Hit on page 1 must
+// ship prune filters and per_page=100 in the query.
+func TestFindActionRunByHeadSHAHit(t *testing.T) {
+	var cap v8Capture
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, _ := io.ReadAll(r.Body)
+		q, _ := url.ParseQuery(r.URL.RawQuery)
+		cap = v8Capture{Method: r.Method, Path: r.URL.Path, Query: q, Body: string(raw)}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"total_count":1,"workflow_runs":[{"workflow_run_id":"r1","head_sha":"abc123","status":"FAILED"}]}`))
+	}))
+	t.Cleanup(server.Close)
+	client := NewClientWithBaseURL(server.URL+"/api/v5", "test-token")
+
+	run, err := client.FindActionRunByHeadSHA(context.Background(), "o", "r", "abc123", ListWorkflowRunsOptions{Branch: "main", Status: "FAILED"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if run.WorkflowRunID != "r1" {
+		t.Fatalf("expected run r1, got %q", run.WorkflowRunID)
+	}
+	if !strings.HasPrefix(cap.Path, "/api/v8/repos/o/r/actions/runs") {
+		t.Fatalf("finder must hit the v8 runs list, got %s", cap.Path)
+	}
+	if cap.Query.Get("per_page") != "100" || cap.Query.Get("page") != "1" {
+		t.Fatalf("finder must scan at per_page=100 from page 1, got page=%s per_page=%s", cap.Query.Get("page"), cap.Query.Get("per_page"))
+	}
+	if cap.Query.Get("branch") != "main" || cap.Query.Get("status") != "FAILED" {
+		t.Fatalf("prune filters must reach the wire, got %v", cap.Query)
+	}
+}
+
+// No matching SHA across the full list (full page, then short page) must
+// surface ErrActionRunNotFound, not a fabricated run or a hang.
+func TestFindActionRunByHeadSHANotFound(t *testing.T) {
+	full := `{"total_count":200,"workflow_runs":[` +
+		`{"workflow_run_id":"r1","head_sha":"aaa"}` + strings.Repeat(`,{"workflow_run_id":"rx","head_sha":"bbb"}`, 98) + `]}`
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q, _ := url.ParseQuery(r.URL.RawQuery)
+		w.Header().Set("Content-Type", "application/json")
+		if q.Get("page") == "2" {
+			_, _ = w.Write([]byte(`{"total_count":200,"workflow_runs":[{"workflow_run_id":"r2","head_sha":"ccc"}]}`))
+			return
+		}
+		_, _ = w.Write([]byte(full))
+	}))
+	t.Cleanup(server.Close)
+	client := NewClientWithBaseURL(server.URL+"/api/v5", "test-token")
+
+	run, err := client.FindActionRunByHeadSHA(context.Background(), "o", "r", "deadbeef", ListWorkflowRunsOptions{})
+	if run != nil {
+		t.Fatalf("expected nil run, got %+v", run)
+	}
+	if !errors.Is(err, ErrActionRunNotFound) {
+		t.Fatalf("expected ErrActionRunNotFound, got %v", err)
+	}
+}
+
+// A match on a later page must be found (walker does not stop at page 1).
+func TestFindActionRunByHeadSHASecondPage(t *testing.T) {
+	page1 := `{"total_count":101,"workflow_runs":[` + strings.Repeat(`{"workflow_run_id":"rx","head_sha":"aaa"},`, 99) + `{"workflow_run_id":"r99","head_sha":"bbb"}]}`
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q, _ := url.ParseQuery(r.URL.RawQuery)
+		w.Header().Set("Content-Type", "application/json")
+		if q.Get("page") == "2" {
+			_, _ = w.Write([]byte(`{"total_count":101,"workflow_runs":[{"workflow_run_id":"r100","head_sha":"deadbeef"}]}`))
+			return
+		}
+		_, _ = w.Write([]byte(page1))
+	}))
+	t.Cleanup(server.Close)
+	client := NewClientWithBaseURL(server.URL+"/api/v5", "test-token")
+
+	run, err := client.FindActionRunByHeadSHA(context.Background(), "o", "r", "deadbeef", ListWorkflowRunsOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if run.WorkflowRunID != "r100" {
+		t.Fatalf("expected page-2 run r100, got %q", run.WorkflowRunID)
+	}
+}
+
+// Empty sha must be rejected before any wire traffic.
+func TestFindActionRunByHeadSHARequiresSHA(t *testing.T) {
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++ }))
+	t.Cleanup(server.Close)
+	client := NewClientWithBaseURL(server.URL+"/api/v5", "test-token")
+
+	if _, err := client.FindActionRunByHeadSHA(context.Background(), "o", "r", "", ListWorkflowRunsOptions{}); err == nil {
+		t.Fatal("expected an error for empty sha")
+	}
+	if calls != 0 {
+		t.Fatalf("empty sha must not hit the wire, got %d calls", calls)
 	}
 }
