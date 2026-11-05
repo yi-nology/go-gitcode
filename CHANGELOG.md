@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`FindActionRunByHeadSHA`（issue #2 的诚实解法）**：v8 wire 的 runs 列表
+  **没有** head_sha 过滤器——文档化 query 参数集只有
+  event/status/branch/executor/pull_request_id/workflow_id/workflow_name/
+  page/per_page/startTime/endTime（docs.gitcode.com "获取仓库所有的流水线的
+  运行记录"，2026-11-06 核对；head_sha 只是响应字段）。按 wire-provenance
+  纪律不发明过滤器；helper 用调用方给的文档化参数（prune）预过滤 +
+  per_page=100 分页游走 + 客户端 head_sha 匹配，命中即停（列表新→旧，新
+  commit 的 run 通常在第 1 页）；50 页封顶，未命中返回哨兵
+  `ErrActionRunNotFound`（errors.Is 可判定）。四组单测（命中带 prune 断言/
+  未命中/跨页/空 SHA 不出网）。
+
+### Changed
+- **`Assign/UnassignPullRequestReviewers`、`ResetPullRequestReviewStatus`
+  补语义注释（issue #2 第 3 条）**：wire 词表是 `/pulls/{n}/assignees`，
+  但 GitCode 文档写明语义是「指派/取消/重置 PR **审查**」——SDK 命名忠于
+  平台语义（审查人），与 GitHub/Gitea 的 assignee（经办人）相反；下游
+  跨平台统一面不得按 GitHub 血统把此方法接成 assignee 语义。
+
+### 已有能力指路（issue #2 第 2 条，提交时已过时）
+- job logs 线路自 v0.10.0（2026-11-02 v8 重写）就有：
+  `GetActionJobLogs`（POST /v8/repos/{o}/{r}/actions/runs/{run_id}/jobs/
+  {job_id}/logs，增量分页 body `{step_id, offset, limit, sort}`）+
+  `DownloadActionJobLogs`（GET …/download-log 归档）；docs sitemap 同样有
+  GET/POST logs 两页。issue 里的「/actions/jobs/{id}/logs」是 GitHub 形状，
+  v8 把 job 挂在 runs/{run_id}/jobs/{job_id} 下。
+
 ## [v0.14.0] - 2026-11-04
 
 ### Fixed / Changed (breaking)
