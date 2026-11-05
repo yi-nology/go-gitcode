@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.15.0] - 2026-11-06
 ### Added
 - **`FindActionRunByHeadSHA`（issue #2 的诚实解法）**：v8 wire 的 runs 列表
   **没有** head_sha 过滤器——文档化 query 参数集只有
