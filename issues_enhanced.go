@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -20,7 +19,7 @@ type IssueRelatedBranch struct {
 // GET /repos/{owner}/{repo}/issues/{number}/related-branches
 func (c *Client) ListIssueRelatedBranches(ctx context.Context, owner, repo string, number int) ([]*IssueRelatedBranch, error) {
 	var branches []*IssueRelatedBranch
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/%d/related-branches", owner, repo, number), nil, &branches)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/%d/related-branches", owner, repo, number), nil, &branches)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +30,7 @@ func (c *Client) ListIssueRelatedBranches(ctx context.Context, owner, repo strin
 //
 // PUT /repos/{owner}/{repo}/issues/{number}/related-branches
 func (c *Client) SetIssueRelatedBranches(ctx context.Context, owner, repo string, number int, branches []string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/issues/%d/related-branches", owner, repo, number), map[string]interface{}{"branches": branches}, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/issues/%d/related-branches", owner, repo, number), map[string]interface{}{"branches": branches}, nil)
 }
 
 // --- Issue Kanban Values ---
@@ -48,7 +47,7 @@ type KanbanValue struct {
 //
 // PUT /repos/{owner}/{repo}/issues/{number}/kanban-values
 func (c *Client) UpdateIssueKanbanValues(ctx context.Context, owner, repo string, number int, values []KanbanValue) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/issues/%d/kanban-values", owner, repo, number), values, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/issues/%d/kanban-values", owner, repo, number), values, nil)
 }
 
 // --- Issue Modify History ---
@@ -70,7 +69,7 @@ type ModifyHistoryEntry struct {
 // GET /repos/{owner}/{repo}/issues/{number}/modify-history
 func (c *Client) ListIssueModifyHistory(ctx context.Context, owner, repo string, number int, opts ListOptions) ([]*ModifyHistoryEntry, error) {
 	var history []*ModifyHistoryEntry
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/%d/modify-history?%s", owner, repo, number, opts.toQuery()), nil, &history)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/%d/modify-history?%s", owner, repo, number, opts.toQuery()), nil, &history)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +81,7 @@ func (c *Client) ListIssueModifyHistory(ctx context.Context, owner, repo string,
 // GET /repos/{owner}/{repo}/issues/comment/{comment_id}/modify-history
 func (c *Client) ListIssueCommentModifyHistory(ctx context.Context, owner, repo string, commentID int64, opts ListOptions) ([]*ModifyHistoryEntry, error) {
 	var history []*ModifyHistoryEntry
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/comment/%d/modify-history?%s", owner, repo, commentID, opts.toQuery()), nil, &history)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/comment/%d/modify-history?%s", owner, repo, commentID, opts.toQuery()), nil, &history)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +103,7 @@ type IssueUserReaction struct {
 // GET /repos/{owner}/{repo}/issues/{number}/user-reactions
 func (c *Client) ListIssueUserReactions(ctx context.Context, owner, repo string, number int, opts ListOptions) ([]*IssueUserReaction, error) {
 	var reactions []*IssueUserReaction
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/%d/user-reactions?%s", owner, repo, number, opts.toQuery()), nil, &reactions)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/%d/user-reactions?%s", owner, repo, number, opts.toQuery()), nil, &reactions)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +115,7 @@ func (c *Client) ListIssueUserReactions(ctx context.Context, owner, repo string,
 // GET /repos/{owner}/{repo}/issues/comment/{comment_id}/user-reactions
 func (c *Client) ListIssueCommentUserReactions(ctx context.Context, owner, repo string, commentID int64, opts ListOptions) ([]*IssueUserReaction, error) {
 	var reactions []*IssueUserReaction
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/comment/%d/user-reactions?%s", owner, repo, commentID, opts.toQuery()), nil, &reactions)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/comment/%d/user-reactions?%s", owner, repo, commentID, opts.toQuery()), nil, &reactions)
 	if err != nil {
 		return nil, err
 	}

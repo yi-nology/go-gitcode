@@ -9,7 +9,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -30,7 +29,7 @@ type EnterpriseIssueStatus struct {
 // GET /enterprises/{enterprise}/issue-statuses (v5).
 func (c *Client) ListEnterpriseIssueStatuses(ctx context.Context, enterprise string) ([]*EnterpriseIssueStatus, error) {
 	var statuses []*EnterpriseIssueStatus
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/issue-statuses", enterprise), nil, &statuses)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/enterprises/%s/issue-statuses", enterprise), nil, &statuses)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +43,7 @@ func (c *Client) ListEnterpriseIssueStatuses(ctx context.Context, enterprise str
 // get-api-v-5-enterprises-enterprise-issues-number).
 func (c *Client) GetEnterpriseIssue(ctx context.Context, enterprise string, number int) (*Issue, error) {
 	var issue Issue
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/issues/%d", enterprise, number), nil, &issue)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/enterprises/%s/issues/%d", enterprise, number), nil, &issue)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +56,7 @@ func (c *Client) GetEnterpriseIssue(ctx context.Context, enterprise string, numb
 // get-api-v-5-enterprises-enterprise-issues-number-comments).
 func (c *Client) ListEnterpriseIssueComments(ctx context.Context, enterprise string, number int, opts ListOptions) ([]*IssueComment, error) {
 	var comments []*IssueComment
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/issues/%d/comments?%s", enterprise, number, opts.toQuery()), nil, &comments)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/enterprises/%s/issues/%d/comments?%s", enterprise, number, opts.toQuery()), nil, &comments)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +70,7 @@ func (c *Client) ListEnterpriseIssueComments(ctx context.Context, enterprise str
 // get-api-v-5-enterprises-enterprise-issues-issue-id-labels).
 func (c *Client) ListEnterpriseIssueLabels(ctx context.Context, enterprise string, issueID int64) ([]*Label, error) {
 	var labels []*Label
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/issues/%d/labels", enterprise, issueID), nil, &labels)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/enterprises/%s/issues/%d/labels", enterprise, issueID), nil, &labels)
 	if err != nil {
 		return nil, err
 	}

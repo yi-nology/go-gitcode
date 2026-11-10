@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,7 +24,49 @@ const (
 
 	// EnvGitToken is the environment variable for the GitCode API token.
 	EnvGitToken = "GITCODE_TOKEN"
+
+	// defaultMaxJSONBodyBytes caps how much of a JSON API response is read
+	// into memory. JSON payloads are small; anything past this means a
+	// broken or hostile server, and refusing beats OOM-ing the process
+	// (issue #7).
+	defaultMaxJSONBodyBytes int64 = 16 << 20 // 16 MiB
+
+	// defaultMaxRawBodyBytes caps binary downloads (raw files, release
+	// assets, artifacts, log archives). These are legitimately large, so
+	// the ceiling is far higher — but still a ceiling.
+	defaultMaxRawBodyBytes int64 = 1 << 30 // 1 GiB
 )
+
+// ResponseBodyTooLargeError is returned when a response body exceeds the
+// configured read limit instead of being read unbounded into memory.
+type ResponseBodyTooLargeError struct {
+	// Limit is the maximum number of bytes that would have been read.
+	Limit int64
+}
+
+func (e *ResponseBodyTooLargeError) Error() string {
+	return fmt.Sprintf("gitcode: response body exceeds %d-byte limit", e.Limit)
+}
+
+// IsResponseBodyTooLarge checks if an error is a ResponseBodyTooLargeError.
+func IsResponseBodyTooLarge(err error) bool {
+	var target *ResponseBodyTooLargeError
+	return errors.As(err, &target)
+}
+
+// readBodyLimited reads r fully into memory but never more than limit
+// bytes; past the limit it stops and reports ResponseBodyTooLargeError so a
+// broken or hostile server cannot trigger unbounded allocation (issue #7).
+func readBodyLimited(r io.Reader, limit int64) ([]byte, error) {
+	b, err := io.ReadAll(io.LimitReader(r, limit+1))
+	if err != nil {
+		return b, err
+	}
+	if int64(len(b)) > limit {
+		return b, &ResponseBodyTooLargeError{Limit: limit}
+	}
+	return b, nil
+}
 
 // Client is the GitCode API client.
 type Client struct {
@@ -32,6 +75,11 @@ type Client struct {
 	httpClient *http.Client
 	authStyle  AuthStyle
 	mu         sync.RWMutex
+
+	// maxBodyBytes overrides the per-response body read limit for every
+	// request; 0 means "use the tiered defaults" (defaultMaxJSONBodyBytes
+	// for JSON endpoints, defaultMaxRawBodyBytes for binary downloads).
+	maxBodyBytes int64
 
 	// Retry policy for failed requests.
 	retryPolicy *RetryPolicy
@@ -122,6 +170,54 @@ func (c *Client) BaseURL() string {
 	return c.baseURL
 }
 
+// SetMaxResponseBodySize caps how many bytes of any response body are read
+// into memory. Values <= 0 restore the tiered defaults (16 MiB for JSON
+// endpoints, 1 GiB for binary downloads). The limit is enforced on every
+// request path; exceeding it fails with ResponseBodyTooLargeError (issue #7).
+func (c *Client) SetMaxResponseBodySize(n int64) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if n <= 0 {
+		n = 0
+	}
+	c.maxBodyBytes = n
+}
+
+// MaxResponseBodySize returns the configured response body limit; 0 means
+// the tiered defaults are in effect.
+func (c *Client) MaxResponseBodySize() int64 {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.maxBodyBytes
+}
+
+// jsonBodyLimit is the read limit for JSON API responses.
+func (c *Client) jsonBodyLimit() int64 {
+	if n := c.MaxResponseBodySize(); n > 0 {
+		return n
+	}
+	return defaultMaxJSONBodyBytes
+}
+
+// rawBodyLimit is the read limit for binary download responses.
+func (c *Client) rawBodyLimit() int64 {
+	if n := c.MaxResponseBodySize(); n > 0 {
+		return n
+	}
+	return defaultMaxRawBodyBytes
+}
+
+// requestSnapshot captures the request-time mutable settings under the read
+// lock. Every read of baseURL/httpClient on the request path goes through
+// it so that concurrent SetHTTPClient/SetBaseURL calls cannot race the
+// readers — the setters write under the same mutex, and until now the
+// readers did not hold it (issue #8).
+func (c *Client) requestSnapshot() (base string, hc *http.Client) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.baseURL, c.httpClient
+}
+
 // setAuthHeader sets the authentication header on the request.
 func (c *Client) setAuthHeader(req *http.Request) {
 	c.mu.RLock()
@@ -143,7 +239,8 @@ func (c *Client) setAuthHeader(req *http.Request) {
 
 // doRequest executes an HTTP request and unmarshals the result.
 func (c *Client) doRequest(ctx context.Context, method, path string, body interface{}, result interface{}) error {
-	return c.doRequestAt(ctx, c.baseURL, method, path, body, result)
+	base, _ := c.requestSnapshot()
+	return c.doRequestAt(ctx, base, method, path, body, result)
 }
 
 // doRequestAt executes an HTTP request against an explicit base URL and
@@ -151,13 +248,29 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 // (doRequest) and the v8 API (actions_v8.go), whose paths differ only by
 // the base.
 func (c *Client) doRequestAt(ctx context.Context, base, method, path string, body interface{}, result interface{}) error {
-	var reqBody io.Reader
+	var raw []byte
 	if body != nil {
-		raw, err := json.Marshal(body)
+		var err error
+		raw, err = json.Marshal(body)
 		if err != nil {
 			return err
 		}
-		reqBody = bytes.NewReader(raw)
+	}
+	return c.doBufferedRequestAt(ctx, base, method, path, "application/json", raw, result, c.jsonBodyLimit())
+}
+
+// doBufferedRequestAt is the single shared execution pipeline:
+// auth header → request hooks → retry loop → response hooks →
+// size-limited body read → status check → JSON decode.
+//
+// Every request shape — JSON bodies, form encoding, multipart uploads —
+// funnels through it, so request/response hooks and the retry policy apply
+// uniformly (issue #9: uploads used to bypass both). body may be nil (no
+// request body); limit caps the response body read (issue #7).
+func (c *Client) doBufferedRequestAt(ctx context.Context, base, method, path, contentType string, body []byte, result interface{}, limit int64) error {
+	var reqBody io.Reader
+	if body != nil {
+		reqBody = bytes.NewReader(body)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, base+path, reqBody)
@@ -166,7 +279,9 @@ func (c *Client) doRequestAt(ctx context.Context, base, method, path string, bod
 	}
 
 	c.setAuthHeader(req)
-	req.Header.Set("Content-Type", "application/json")
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	}
 
 	// Run request hooks
 	if err := c.runRequestHooks(req); err != nil {
@@ -185,176 +300,7 @@ func (c *Client) doRequestAt(ctx context.Context, base, method, path string, bod
 		return fmt.Errorf("response hook error: %w", err)
 	}
 
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode >= 400 {
-		return newAPIError(method, path, resp.StatusCode, string(respBody))
-	}
-
-	if result != nil && resp.StatusCode != http.StatusNoContent {
-		if len(respBody) > 0 {
-			if err := json.Unmarshal(respBody, result); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-// doRawRequestAt executes an HTTP request against an explicit base URL and
-// returns the raw response body (binary downloads: artifacts, log archives).
-func (c *Client) doRawRequestAt(ctx context.Context, base, method, path string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, method, base+path, nil)
-	if err != nil {
-		return nil, err
-	}
-	c.setAuthHeader(req)
-	if err := c.runRequestHooks(req); err != nil {
-		return nil, fmt.Errorf("request hook error: %w", err)
-	}
-	resp, err := c.doRequestWithRetry(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if err := c.runResponseHooks(resp); err != nil {
-		return nil, fmt.Errorf("response hook error: %w", err)
-	}
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode >= 400 {
-		return nil, newAPIError(method, path, resp.StatusCode, string(body[:min(len(body), 200)]))
-	}
-	return body, nil
-}
-
-// doRawRequest executes a raw HTTP request and returns the response body.
-func (c *Client) doRawRequest(ctx context.Context, method, path string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	c.setAuthHeader(req)
-
-	// Run request hooks
-	if err := c.runRequestHooks(req); err != nil {
-		return nil, fmt.Errorf("request hook error: %w", err)
-	}
-
-	// Execute request with retry
-	resp, err := c.doRequestWithRetry(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// Run response hooks
-	if err := c.runResponseHooks(resp); err != nil {
-		return nil, fmt.Errorf("response hook error: %w", err)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, newAPIError(method, path, resp.StatusCode, string(body[:min(len(body), 200)]))
-	}
-
-	return body, nil
-}
-
-// doFormRequest executes a form-encoded HTTP request.
-func (c *Client) doFormRequest(ctx context.Context, method, path string, params url.Values, result interface{}) error {
-	var reqBody io.Reader
-	if params != nil {
-		reqBody = strings.NewReader(params.Encode())
-	}
-
-	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, reqBody)
-	if err != nil {
-		return err
-	}
-
-	c.setAuthHeader(req)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	// Run request hooks
-	if err := c.runRequestHooks(req); err != nil {
-		return fmt.Errorf("request hook error: %w", err)
-	}
-
-	// Execute request with retry
-	resp, err := c.doRequestWithRetry(ctx, req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Run response hooks
-	if err := c.runResponseHooks(resp); err != nil {
-		return fmt.Errorf("response hook error: %w", err)
-	}
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode >= 400 {
-		return newAPIError(method, path, resp.StatusCode, string(respBody))
-	}
-
-	if result != nil && resp.StatusCode != http.StatusNoContent {
-		if err := json.Unmarshal(respBody, result); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doRawBodyRequest executes an HTTP request with a raw JSON body.
-func (c *Client) doRawBodyRequest(ctx context.Context, method, path string, body interface{}, result interface{}) error {
-	raw, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, bytes.NewReader(raw))
-	if err != nil {
-		return err
-	}
-
-	c.setAuthHeader(req)
-	req.Header.Set("Content-Type", "application/json")
-
-	// Run request hooks
-	if err := c.runRequestHooks(req); err != nil {
-		return fmt.Errorf("request hook error: %w", err)
-	}
-
-	// Execute request with retry
-	resp, err := c.doRequestWithRetry(ctx, req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Run response hooks
-	if err := c.runResponseHooks(resp); err != nil {
-		return fmt.Errorf("response hook error: %w", err)
-	}
-
-	respBody, err := io.ReadAll(resp.Body)
+	respBody, err := readBodyLimited(resp.Body, limit)
 	if err != nil {
 		return err
 	}
@@ -372,11 +318,69 @@ func (c *Client) doRawBodyRequest(ctx context.Context, method, path string, body
 	return nil
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
+// doRawRequestAt executes an HTTP request against an explicit base URL and
+// returns the raw response body (binary downloads: artifacts, log archives).
+func (c *Client) doRawRequestAt(ctx context.Context, base, method, path string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, method, base+path, nil)
+	if err != nil {
+		return nil, err
 	}
-	return b
+	return c.doRawRequestWith(ctx, req, method, path)
+}
+
+// doRawRequest executes a raw HTTP request and returns the response body.
+func (c *Client) doRawRequest(ctx context.Context, method, path string) ([]byte, error) {
+	base, _ := c.requestSnapshot()
+	req, err := http.NewRequestWithContext(ctx, method, base+path, nil)
+	if err != nil {
+		return nil, err
+	}
+	return c.doRawRequestWith(ctx, req, method, path)
+}
+
+// doRawRequestWith runs an already-built request through the shared
+// pipeline (hooks + retry) and returns the raw, size-limited body.
+func (c *Client) doRawRequestWith(ctx context.Context, req *http.Request, method, path string) ([]byte, error) {
+	c.setAuthHeader(req)
+	if err := c.runRequestHooks(req); err != nil {
+		return nil, fmt.Errorf("request hook error: %w", err)
+	}
+	resp, err := c.doRequestWithRetry(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if err := c.runResponseHooks(resp); err != nil {
+		return nil, fmt.Errorf("response hook error: %w", err)
+	}
+	body, err := readBodyLimited(resp.Body, c.rawBodyLimit())
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 400 {
+		return nil, newAPIError(method, path, resp.StatusCode, string(body[:min(len(body), 200)]))
+	}
+	return body, nil
+}
+
+// doFormRequest executes a form-encoded HTTP request.
+func (c *Client) doFormRequest(ctx context.Context, method, path string, params url.Values, result interface{}) error {
+	var raw []byte
+	if params != nil {
+		raw = []byte(params.Encode())
+	}
+	base, _ := c.requestSnapshot()
+	return c.doBufferedRequestAt(ctx, base, method, path, "application/x-www-form-urlencoded", raw, result, c.jsonBodyLimit())
+}
+
+// doRawBodyRequest executes an HTTP request with a raw JSON body.
+func (c *Client) doRawBodyRequest(ctx context.Context, method, path string, body interface{}, result interface{}) error {
+	raw, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	base, _ := c.requestSnapshot()
+	return c.doBufferedRequestAt(ctx, base, method, path, "application/json", raw, result, c.jsonBodyLimit())
 }
 
 // isNotFoundError checks if an error is a 404 Not Found response.
@@ -427,7 +431,7 @@ func (c *Client) GetCurrentUser(ctx context.Context) (*User, error) {
 // GetUser returns a user by username.
 func (c *Client) GetUser(ctx context.Context, username string) (*User, error) {
 	var user User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/users/%s", username), nil, &user)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/users/%s", username), nil, &user)
 	if err != nil {
 		return nil, err
 	}

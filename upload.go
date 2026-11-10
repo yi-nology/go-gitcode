@@ -3,7 +3,6 @@ package gitcode
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -11,54 +10,50 @@ import (
 	"path/filepath"
 )
 
-// UploadFileReader uploads a file using multipart form data.
-// This is the proper way to upload file contents (as opposed to UploadFile which takes a path).
-//
-// POST /repos/{owner}/{repo}/file/upload
-func (c *Client) UploadFileReader(ctx context.Context, owner, repo, filename string, reader io.Reader) (*FileUploadResult, error) {
-	if err := validateOwnerRepo(owner, repo); err != nil {
-		return nil, err
-	}
-
+// multipartBody builds a multipart form with a single "file" field and
+// returns the body together with its Content-Type. The body is a plain
+// []byte so it can be replayed across retries (doRequestWithRetry resets
+// the body via req.GetBody, which http.NewRequestWithContext wires for
+// *bytes.Reader bodies).
+func multipartBody(filename string, reader io.Reader) (body []byte, contentType string, err error) {
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
 
 	part, err := writer.CreateFormFile("file", filename)
 	if err != nil {
-		return nil, fmt.Errorf("create form file: %w", err)
+		return nil, "", fmt.Errorf("create form file: %w", err)
 	}
-
 	if _, err := io.Copy(part, reader); err != nil {
-		return nil, fmt.Errorf("copy file content: %w", err)
+		return nil, "", fmt.Errorf("copy file content: %w", err)
 	}
+	if err := writer.Close(); err != nil {
+		return nil, "", fmt.Errorf("close multipart writer: %w", err)
+	}
+	return buf.Bytes(), writer.FormDataContentType(), nil
+}
 
-	writer.Close()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+fmt.Sprintf("/repos/%s/%s/file/upload", owner, repo), &buf)
-	if err != nil {
+// UploadFileReader uploads a file using multipart form data.
+// This is the proper way to upload file contents (as opposed to UploadFile which takes a path).
+//
+// POST /repos/{owner}/{repo}/file/upload
+//
+// Uploads run through the shared request pipeline (doBufferedRequestAt):
+// request/response hooks fire and the retry policy applies, exactly like
+// every other request method (issue #9).
+func (c *Client) UploadFileReader(ctx context.Context, owner, repo, filename string, reader io.Reader) (*FileUploadResult, error) {
+	if err := validateOwnerRepo(owner, repo); err != nil {
 		return nil, err
 	}
 
-	c.setAuthHeader(req)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-
-	resp, err := c.httpClient.Do(req)
+	body, contentType, err := multipartBody(filename, reader)
 	if err != nil {
 		return nil, err
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, newAPIError(http.MethodPost, req.URL.Path, resp.StatusCode, string(respBody))
 	}
 
 	var result FileUploadResult
-	if err := json.Unmarshal(respBody, &result); err != nil {
+	base, _ := c.requestSnapshot()
+	if err := c.doBufferedRequestAt(ctx, base, http.MethodPost,
+		pathf("/repos/%s/%s/file/upload", owner, repo), contentType, body, &result, c.jsonBodyLimit()); err != nil {
 		return nil, err
 	}
 	return &result, nil
@@ -67,50 +62,24 @@ func (c *Client) UploadFileReader(ctx context.Context, owner, repo, filename str
 // UploadImageReader uploads an image using multipart form data.
 //
 // POST /repos/{owner}/{repo}/img/upload
+//
+// Uploads run through the shared request pipeline (doBufferedRequestAt):
+// request/response hooks fire and the retry policy applies, exactly like
+// every other request method (issue #9).
 func (c *Client) UploadImageReader(ctx context.Context, owner, repo, filename string, reader io.Reader) (*FileUploadResult, error) {
 	if err := validateOwnerRepo(owner, repo); err != nil {
 		return nil, err
 	}
 
-	var buf bytes.Buffer
-	writer := multipart.NewWriter(&buf)
-
-	part, err := writer.CreateFormFile("file", filename)
-	if err != nil {
-		return nil, fmt.Errorf("create form file: %w", err)
-	}
-
-	if _, err := io.Copy(part, reader); err != nil {
-		return nil, fmt.Errorf("copy file content: %w", err)
-	}
-
-	writer.Close()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+fmt.Sprintf("/repos/%s/%s/img/upload", owner, repo), &buf)
+	body, contentType, err := multipartBody(filename, reader)
 	if err != nil {
 		return nil, err
-	}
-
-	c.setAuthHeader(req)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, newAPIError(http.MethodPost, req.URL.Path, resp.StatusCode, string(respBody))
 	}
 
 	var result FileUploadResult
-	if err := json.Unmarshal(respBody, &result); err != nil {
+	base, _ := c.requestSnapshot()
+	if err := c.doBufferedRequestAt(ctx, base, http.MethodPost,
+		pathf("/repos/%s/%s/img/upload", owner, repo), contentType, body, &result, c.jsonBodyLimit()); err != nil {
 		return nil, err
 	}
 	return &result, nil

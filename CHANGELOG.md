@@ -7,6 +7,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.16.0] - 2026-11-11
+### Fixed
+- **Retry-After 三道闸（issue #4）**：`getRetryWaitTime` 的 `Retry-After`
+  分支此前直接返回未校验的秒数——3600 秒照等（越过 `MaxBackoff`）、
+  负数秒产出负时长（`time.After` 立即触发，退避退化成忙等）、
+  HTTP-date 形式经 `Atoi` 必然失败被静默忽略。现在统一走
+  `retryAfterDuration`：非正值（负数/零/过去的日期）与不可解析值
+  回落指数退避；delay-seconds 与 HTTP-date（`http.ParseTime`）两种
+  RFC 9110 形式都支持；解析结果与指数退避共用同一道 `MaxBackoff`
+  钳制；超大秒数在 Duration 转换前封顶防溢出。零值
+  `InitialBackoff`/`MaxBackoff` 按文档默认（1s/30s）归一。
+- **Paginate 页数封顶（issue #5）**：服务端异常恒返满页时，旧实现
+  300ms 可打出 12 万次请求、只能靠 ctx 止损。现在游走以
+  `maxPaginatePages = 50`（与 go-gongfeng 对齐）封顶，触顶 yield
+  哨兵错误 `ErrTooManyPages`（errors.Is 可判定）而非静默结束——
+  「封顶截断」与「取完」可区分。注：未做「与上一页内容相同即停」
+  的短路——合法数据里跨页全同（如 200 条同名项）无法与服务端
+  忽略分页参数区分，误杀面大于收益，封顶已把损害有界化。
+- **383 处端点路径统一转义（issue #6）**：全仓端点路径从裸
+  `fmt.Sprintf` 收编到新 helper `pathf`——路径侧的字符串实参一律
+  `url.PathEscape`（`/`→`%2F`、`?`→`%3F`、`#`→`%23`，调用方控制
+  的 owner/repo/org 被隔离在自己的段内，不再能插层级或改写端点）；
+  `?` 后的 query 实参不动；`%d` 等数值动词原样；仓库文件路径这类
+  天然含 `/` 的参数走 `pathSegs`（逐段转义、保留分隔符）。顺带把
+  六处裸拼 query 值（search 三件的 `q=`/过滤参数、events 的
+  year/next、namespace 的 path、archive 的 ref/format、contents/raw
+  的 ref）改为 `url.QueryEscape`/`url.Values`。
+- **响应体读取有界（issue #7）**：client/upload/oauth 全部 9 处
+  `io.ReadAll` 收口到 `readBodyLimited`（`io.LimitReader` 实现），
+  分层默认上限：JSON 端点 16 MiB、二进制下载（raw 文件/release
+  资产/artifact/日志归档）1 GiB；超限报
+  `ResponseBodyTooLargeError`（`IsResponseBodyTooLarge` 判定）而非
+  无界分配（实测 256MB 响应曾致堆 +569.7MB）。
+- **client 字段读侧持锁（issue #8）**：`baseURL`/`httpClient` 的
+  读点（doRequest/doRawRequest/doFormRequest/doRawBodyRequest/
+  retry 循环/upload）此前全部裸读，与持锁写的
+  `SetHTTPClient`/`SetBaseURL` 构成 data race（interface 撕裂可致
+  runtime crash）。现在统一经 `requestSnapshot`（RLock 下取值），
+  与仓内 `retryPolicy`/hooks 的既有读法对齐。
+- **upload 走共享管线（issue #9）**：`UploadFileReader`/
+  `UploadImageReader` 此前自建请求直发——审计 hook 从不触发、
+  429/5xx 从不重试，与 CHANGELOG「All HTTP request methods now run
+  request/response hooks and support retry policy」的承诺相悖。现在
+  构造 multipart body 后走 `doBufferedRequestAt`（鉴权 → request
+  hook → 重试 → response hook → 有界读体）。同时修复一个连带的
+  潜伏缺陷：重试第 2+ 次尝试此前复用已耗尽的 body reader（发空
+  body），现在经 `req.GetBody` 重放——JSON POST 与 multipart 上传
+  的重试都因此真正可重入（有测试断言三次尝试 body 逐字一致）。
+- **ListRepositories 不再丢 Type/Sort（issue #10）**：
+  `ListRepositoriesOptions` 新增自有 `toQuery`（遮蔽嵌入的
+  `ListOptions.toQuery`），把 `type`/`sort` 一并上 wire 且经
+  `QueryEscape`；`ListRepositories`（含 Owner 分支）与
+  `ListCurrentUserRepositories` 收敛到同一 helper，杜绝同端点同
+  结构体再次分叉。
+
+### Changed
+- **请求执行核心合并**：doRequestAt/doFormRequest/doRawBodyRequest
+  五份复制粘贴的管线（鉴权→hook→重试→hook→读体→解码）合并为
+  `doBufferedRequestAt` 单核；doRawRequest/doRawRequestAt 共享
+  `doRawRequestWith`。行为差异收敛：form 请求对空 body 从「json
+  unmarshal 报错」变为「跳过解码」（与其余路径一致）。
+- **地板提升**：go 指令 1.26→1.27（CI matrix/lint/fmt/integration/
+  release 与 .golangci.yml 同步）；删除手写 `min`，用内建；
+  `for range n`、`slices.Clone` 就位。本仓零第三方依赖，
+  `go get -u ./...` 无可升项。
+
+### Added
+- `SetMaxResponseBodySize`/`MaxResponseBodySize`：全局覆盖响应体
+  读上限（<=0 恢复分层默认）。
+- `ResponseBodyTooLargeError`/`IsResponseBodyTooLarge`、
+  `ErrTooManyPages` 哨兵，供调用方程序化判定。
+
 ## [v0.15.0] - 2026-11-06
 ### Added
 - **`FindActionRunByHeadSHA`（issue #2 的诚实解法）**：v8 wire 的 runs 列表

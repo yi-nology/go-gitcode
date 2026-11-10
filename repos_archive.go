@@ -2,8 +2,8 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"net/url"
 )
 
 // GetRepositoryArchive downloads a repository archive (tar.gz, zip, etc.).
@@ -11,33 +11,33 @@ import (
 // GET /repos/{owner}/{repo}/archive/{archive}
 func (c *Client) GetRepositoryArchive(ctx context.Context, owner, repo, archive string) ([]byte, error) {
 	// archive can be: master.tar.gz, main.zip, v1.0.0.tar.gz, etc.
-	return c.doRawRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/archive/%s", owner, repo, archive))
+	return c.doRawRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/archive/%s", owner, repo, archive))
 }
 
 // DownloadRepository downloads a repository as a zip or tarball.
 //
 // GET /repos/{owner}/{repo}/{format}
 func (c *Client) DownloadRepository(ctx context.Context, owner, repo, format string) ([]byte, error) {
-	// format can be: repository/archive.zip, repository/archive.tar.gz
-	return c.doRawRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/%s", owner, repo, format))
+	// format can be: repository/archive.zip, repository/archive.tar.gz —
+	// slash-bearing, so it goes through pathSegs (per-segment escaping that
+	// keeps the separators).
+	return c.doRawRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/%s", owner, repo, pathSegs(format)))
 }
 
 // GenerateRepositoryArchive generates a repository archive.
 //
 // GET /repos/{owner}/{repo}/archive
 func (c *Client) GenerateRepositoryArchive(ctx context.Context, owner, repo, ref, format string) ([]byte, error) {
-	path := fmt.Sprintf("/repos/%s/%s/archive", owner, repo)
-	if ref != "" || format != "" {
-		path += "?"
-		if ref != "" {
-			path += "ref=" + ref
-		}
-		if format != "" {
-			if ref != "" {
-				path += "&"
-			}
-			path += "format=" + format
-		}
+	path := pathf("/repos/%s/%s/archive", owner, repo)
+	q := url.Values{}
+	if ref != "" {
+		q.Set("ref", ref)
+	}
+	if format != "" {
+		q.Set("format", format)
+	}
+	if len(q) > 0 {
+		path += "?" + q.Encode()
 	}
 	return c.doRawRequest(ctx, http.MethodGet, path)
 }
@@ -58,7 +58,7 @@ type ParticipationStats struct {
 // GET /repos/{owner}/{repo}/stats/participation
 func (c *Client) GetRepoParticipation(ctx context.Context, owner, repo string) (*ParticipationStats, error) {
 	var stats ParticipationStats
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/stats/participation", owner, repo), nil, &stats)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/stats/participation", owner, repo), nil, &stats)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ type CodeFrequencyEntry []int
 // GET /repos/{owner}/{repo}/stats/code_frequency
 func (c *Client) GetRepoCodeFrequency(ctx context.Context, owner, repo string) ([]CodeFrequencyEntry, error) {
 	var entries []CodeFrequencyEntry
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/stats/code_frequency", owner, repo), nil, &entries)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/stats/code_frequency", owner, repo), nil, &entries)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ type CommitActivity struct {
 // GET /repos/{owner}/{repo}/stats/commit_activity
 func (c *Client) GetRepoCommitActivity(ctx context.Context, owner, repo string) ([]*CommitActivity, error) {
 	var activity []*CommitActivity
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/stats/commit_activity", owner, repo), nil, &activity)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/stats/commit_activity", owner, repo), nil, &activity)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ type PunchCardEntry []int
 // GET /repos/{owner}/{repo}/stats/punch_card
 func (c *Client) GetRepoPunchCard(ctx context.Context, owner, repo string) ([]PunchCardEntry, error) {
 	var entries []PunchCardEntry
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/stats/punch_card", owner, repo), nil, &entries)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/stats/punch_card", owner, repo), nil, &entries)
 	if err != nil {
 		return nil, err
 	}

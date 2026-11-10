@@ -2,8 +2,8 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -50,23 +50,23 @@ type SearchRepositoryResult struct {
 
 func (c *Client) SearchRepositories(ctx context.Context, opts SearchRepositoriesOptions) ([]*SearchRepositoryResult, error) {
 	var repos []*SearchRepositoryResult
-	query := fmt.Sprintf("q=%s&%s", opts.Query, opts.toQuery())
+	query := "q=" + url.QueryEscape(opts.Query) + "&" + opts.toQuery()
 	if opts.Sort != "" {
-		query += "&sort=" + opts.Sort
+		query += "&sort=" + url.QueryEscape(opts.Sort)
 	}
 	if opts.Order != "" {
-		query += "&order=" + opts.Order
+		query += "&order=" + url.QueryEscape(opts.Order)
 	}
 	if opts.Owner != "" {
-		query += "&owner=" + opts.Owner
+		query += "&owner=" + url.QueryEscape(opts.Owner)
 	}
 	if opts.Fork != "" {
-		query += "&fork=" + opts.Fork
+		query += "&fork=" + url.QueryEscape(opts.Fork)
 	}
 	if opts.Language != "" {
-		query += "&language=" + opts.Language
+		query += "&language=" + url.QueryEscape(opts.Language)
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/search/repositories?%s", query), nil, &repos)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/search/repositories?%s", query), nil, &repos)
 	if err != nil {
 		return nil, err
 	}
@@ -107,20 +107,20 @@ type SearchIssueResult struct {
 
 func (c *Client) SearchIssues(ctx context.Context, opts SearchIssuesOptions) ([]*SearchIssueResult, error) {
 	var issues []*SearchIssueResult
-	query := fmt.Sprintf("q=%s&%s", opts.Query, opts.toQuery())
+	query := "q=" + url.QueryEscape(opts.Query) + "&" + opts.toQuery()
 	if opts.Sort != "" {
-		query += "&sort=" + opts.Sort
+		query += "&sort=" + url.QueryEscape(opts.Sort)
 	}
 	if opts.Order != "" {
-		query += "&order=" + opts.Order
+		query += "&order=" + url.QueryEscape(opts.Order)
 	}
 	if opts.Repo != "" {
-		query += "&repo=" + opts.Repo
+		query += "&repo=" + url.QueryEscape(opts.Repo)
 	}
 	if opts.State != "" {
-		query += "&state=" + opts.State
+		query += "&state=" + url.QueryEscape(opts.State)
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/search/issues?%s", query), nil, &issues)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/search/issues?%s", query), nil, &issues)
 	if err != nil {
 		return nil, err
 	}
@@ -145,14 +145,14 @@ type SearchUserResult struct {
 
 func (c *Client) SearchUsers(ctx context.Context, opts SearchUsersOptions) ([]*SearchUserResult, error) {
 	var users []*SearchUserResult
-	query := fmt.Sprintf("q=%s&%s", opts.Query, opts.toQuery())
+	query := "q=" + url.QueryEscape(opts.Query) + "&" + opts.toQuery()
 	if opts.Sort != "" {
-		query += "&sort=" + opts.Sort
+		query += "&sort=" + url.QueryEscape(opts.Sort)
 	}
 	if opts.Order != "" {
-		query += "&order=" + opts.Order
+		query += "&order=" + url.QueryEscape(opts.Order)
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/search/users?%s", query), nil, &users)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/search/users?%s", query), nil, &users)
 	if err != nil {
 		return nil, err
 	}

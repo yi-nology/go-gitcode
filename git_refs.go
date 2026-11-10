@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -37,7 +36,7 @@ type UpdateReferenceOptions struct {
 // GET /repos/{owner}/{repo}/git/refs
 func (c *Client) ListGitReferences(ctx context.Context, owner, repo string, opts ListOptions) ([]*GitReference, error) {
 	var refs []*GitReference
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/git/refs?%s", owner, repo, opts.toQuery()), nil, &refs)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/git/refs?%s", owner, repo, opts.toQuery()), nil, &refs)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +48,7 @@ func (c *Client) ListGitReferences(ctx context.Context, owner, repo string, opts
 // GET /repos/{owner}/{repo}/git/refs/{ref}
 func (c *Client) GetGitReference(ctx context.Context, owner, repo, ref string) (*GitReference, error) {
 	var gitRef GitReference
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/git/refs/%s", owner, repo, ref), nil, &gitRef)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/git/refs/%s", owner, repo, ref), nil, &gitRef)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +60,7 @@ func (c *Client) GetGitReference(ctx context.Context, owner, repo, ref string) (
 // POST /repos/{owner}/{repo}/git/refs
 func (c *Client) CreateGitReference(ctx context.Context, owner, repo string, opts CreateReferenceOptions) (*GitReference, error) {
 	var gitRef GitReference
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/git/refs", owner, repo), opts, &gitRef)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/git/refs", owner, repo), opts, &gitRef)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +72,7 @@ func (c *Client) CreateGitReference(ctx context.Context, owner, repo string, opt
 // PATCH /repos/{owner}/{repo}/git/refs/{ref}
 func (c *Client) UpdateGitReference(ctx context.Context, owner, repo, ref string, opts UpdateReferenceOptions) (*GitReference, error) {
 	var gitRef GitReference
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s/git/refs/%s", owner, repo, ref), opts, &gitRef)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/repos/%s/%s/git/refs/%s", owner, repo, ref), opts, &gitRef)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +83,7 @@ func (c *Client) UpdateGitReference(ctx context.Context, owner, repo, ref string
 //
 // DELETE /repos/{owner}/{repo}/git/refs/{ref}
 func (c *Client) DeleteGitReference(ctx context.Context, owner, repo, ref string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/git/refs/%s", owner, repo, ref), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/git/refs/%s", owner, repo, ref), nil, nil)
 }
 
 // ListGitRefSubPaths lists references filtered by prefix (e.g. "heads/", "tags/").
@@ -92,7 +91,7 @@ func (c *Client) DeleteGitReference(ctx context.Context, owner, repo, ref string
 // GET /repos/{owner}/{repo}/git/refs/{refPrefix}
 func (c *Client) ListGitRefSubPaths(ctx context.Context, owner, repo, refPrefix string) ([]*GitReference, error) {
 	var refs []*GitReference
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/git/refs/%s", owner, repo, refPrefix), nil, &refs)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/git/refs/%s", owner, repo, refPrefix), nil, &refs)
 	if err != nil {
 		return nil, err
 	}

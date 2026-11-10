@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -13,7 +12,7 @@ import (
 // GET /users/{username}/subscriptions
 func (c *Client) ListUserWatchedRepositories(ctx context.Context, username string, opts ListOptions) ([]*Repository, error) {
 	var repos []*Repository
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/users/%s/subscriptions?%s", username, opts.toQuery()), nil, &repos)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/users/%s/subscriptions?%s", username, opts.toQuery()), nil, &repos)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +24,7 @@ func (c *Client) ListUserWatchedRepositories(ctx context.Context, username strin
 // GET /user/subscriptions
 func (c *Client) ListCurrentUserWatchedRepositories(ctx context.Context, opts ListOptions) ([]*Repository, error) {
 	var repos []*Repository
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/subscriptions?%s", opts.toQuery()), nil, &repos)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/subscriptions?%s", opts.toQuery()), nil, &repos)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +71,7 @@ func (c *Client) ListUserPullRequests(ctx context.Context, opts ListPullRequests
 	if opts.Direction != "" {
 		query += "&direction=" + opts.Direction
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/users/merge-requests?%s", query), nil, &prs)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/users/merge-requests?%s", query), nil, &prs)
 	if err != nil {
 		return nil, err
 	}

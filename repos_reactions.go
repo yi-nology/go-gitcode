@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -39,7 +38,7 @@ type CreateReactionOptions struct {
 // GET /repos/{owner}/{repo}/issues/{index}/reactions
 func (c *Client) ListIssueReactions(ctx context.Context, owner, repo string, number int, opts ListOptions) ([]*Reaction, error) {
 	var reactions []*Reaction
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/%d/reactions?%s", owner, repo, number, opts.toQuery()), nil, &reactions)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/%d/reactions?%s", owner, repo, number, opts.toQuery()), nil, &reactions)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +50,7 @@ func (c *Client) ListIssueReactions(ctx context.Context, owner, repo string, num
 // POST /repos/{owner}/{repo}/issues/{index}/reactions
 func (c *Client) CreateIssueReaction(ctx context.Context, owner, repo string, number int, content string) (*Reaction, error) {
 	var reaction Reaction
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/issues/%d/reactions", owner, repo, number), CreateReactionOptions{Content: content}, &reaction)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/issues/%d/reactions", owner, repo, number), CreateReactionOptions{Content: content}, &reaction)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +61,7 @@ func (c *Client) CreateIssueReaction(ctx context.Context, owner, repo string, nu
 //
 // DELETE /repos/{owner}/{repo}/issues/{index}/reactions/{id}
 func (c *Client) DeleteIssueReaction(ctx context.Context, owner, repo string, number int, reactionID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/issues/%d/reactions/%d", owner, repo, number, reactionID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/issues/%d/reactions/%d", owner, repo, number, reactionID), nil, nil)
 }
 
 // --- Issue Comment Reactions ---
@@ -72,7 +71,7 @@ func (c *Client) DeleteIssueReaction(ctx context.Context, owner, repo string, nu
 // GET /repos/{owner}/{repo}/issues/comments/{id}/reactions
 func (c *Client) ListIssueCommentReactions(ctx context.Context, owner, repo string, commentID int64, opts ListOptions) ([]*Reaction, error) {
 	var reactions []*Reaction
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/comments/%d/reactions?%s", owner, repo, commentID, opts.toQuery()), nil, &reactions)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/comments/%d/reactions?%s", owner, repo, commentID, opts.toQuery()), nil, &reactions)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +83,7 @@ func (c *Client) ListIssueCommentReactions(ctx context.Context, owner, repo stri
 // POST /repos/{owner}/{repo}/issues/comments/{id}/reactions
 func (c *Client) CreateIssueCommentReaction(ctx context.Context, owner, repo string, commentID int64, content string) (*Reaction, error) {
 	var reaction Reaction
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/issues/comments/%d/reactions", owner, repo, commentID), CreateReactionOptions{Content: content}, &reaction)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/issues/comments/%d/reactions", owner, repo, commentID), CreateReactionOptions{Content: content}, &reaction)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +94,7 @@ func (c *Client) CreateIssueCommentReaction(ctx context.Context, owner, repo str
 //
 // DELETE /repos/{owner}/{repo}/issues/comments/{id}/reactions/{id}
 func (c *Client) DeleteIssueCommentReaction(ctx context.Context, owner, repo string, commentID, reactionID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/issues/comments/%d/reactions/%d", owner, repo, commentID, reactionID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/issues/comments/%d/reactions/%d", owner, repo, commentID, reactionID), nil, nil)
 }
 
 // --- Pull Request Comment Reactions ---
@@ -105,7 +104,7 @@ func (c *Client) DeleteIssueCommentReaction(ctx context.Context, owner, repo str
 // GET /repos/{owner}/{repo}/pulls/comments/{id}/reactions
 func (c *Client) ListPullRequestCommentReactions(ctx context.Context, owner, repo string, commentID int64, opts ListOptions) ([]*Reaction, error) {
 	var reactions []*Reaction
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/pulls/comments/%d/reactions?%s", owner, repo, commentID, opts.toQuery()), nil, &reactions)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/pulls/comments/%d/reactions?%s", owner, repo, commentID, opts.toQuery()), nil, &reactions)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +116,7 @@ func (c *Client) ListPullRequestCommentReactions(ctx context.Context, owner, rep
 // POST /repos/{owner}/{repo}/pulls/comments/{id}/reactions
 func (c *Client) CreatePullRequestCommentReaction(ctx context.Context, owner, repo string, commentID int64, content string) (*Reaction, error) {
 	var reaction Reaction
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/pulls/comments/%d/reactions", owner, repo, commentID), CreateReactionOptions{Content: content}, &reaction)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/pulls/comments/%d/reactions", owner, repo, commentID), CreateReactionOptions{Content: content}, &reaction)
 	if err != nil {
 		return nil, err
 	}
@@ -128,5 +127,5 @@ func (c *Client) CreatePullRequestCommentReaction(ctx context.Context, owner, re
 //
 // DELETE /repos/{owner}/{repo}/pulls/comments/{id}/reactions/{id}
 func (c *Client) DeletePullRequestCommentReaction(ctx context.Context, owner, repo string, commentID, reactionID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/pulls/comments/%d/reactions/%d", owner, repo, commentID, reactionID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/pulls/comments/%d/reactions/%d", owner, repo, commentID, reactionID), nil, nil)
 }

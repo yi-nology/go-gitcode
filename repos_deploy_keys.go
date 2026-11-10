@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -29,7 +28,7 @@ type CreateDeployKeyOptions struct {
 // GET /repos/{owner}/{repo}/keys
 func (c *Client) ListDeployKeys(ctx context.Context, owner, repo string, opts ListOptions) ([]*DeployKey, error) {
 	var keys []*DeployKey
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/keys?%s", owner, repo, opts.toQuery()), nil, &keys)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/keys?%s", owner, repo, opts.toQuery()), nil, &keys)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +40,7 @@ func (c *Client) ListDeployKeys(ctx context.Context, owner, repo string, opts Li
 // GET /repos/{owner}/{repo}/keys/{id}
 func (c *Client) GetDeployKey(ctx context.Context, owner, repo string, keyID int64) (*DeployKey, error) {
 	var key DeployKey
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/keys/%d", owner, repo, keyID), nil, &key)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/keys/%d", owner, repo, keyID), nil, &key)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +52,7 @@ func (c *Client) GetDeployKey(ctx context.Context, owner, repo string, keyID int
 // POST /repos/{owner}/{repo}/keys
 func (c *Client) CreateDeployKey(ctx context.Context, owner, repo string, opts CreateDeployKeyOptions) (*DeployKey, error) {
 	var key DeployKey
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/keys", owner, repo), opts, &key)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/keys", owner, repo), opts, &key)
 	if err != nil {
 		return nil, err
 	}
@@ -64,5 +63,5 @@ func (c *Client) CreateDeployKey(ctx context.Context, owner, repo string, opts C
 //
 // DELETE /repos/{owner}/{repo}/keys/{id}
 func (c *Client) DeleteDeployKey(ctx context.Context, owner, repo string, keyID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/keys/%d", owner, repo, keyID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/keys/%d", owner, repo, keyID), nil, nil)
 }

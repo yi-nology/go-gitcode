@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -48,7 +47,7 @@ type DiscussionCommentReply struct {
 // GET /repos/{owner}/{repo}/discuss
 func (c *Client) ListDiscussions(ctx context.Context, owner, repo string, opts ListOptions) ([]*Discussion, error) {
 	var discussions []*Discussion
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/discuss?%s", owner, repo, opts.toQuery()), nil, &discussions)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/discuss?%s", owner, repo, opts.toQuery()), nil, &discussions)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +59,7 @@ func (c *Client) ListDiscussions(ctx context.Context, owner, repo string, opts L
 // GET /repos/{owner}/{repo}/discuss/{number}
 func (c *Client) GetDiscussion(ctx context.Context, owner, repo string, number int) (*Discussion, error) {
 	var discussion Discussion
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/discuss/%d", owner, repo, number), nil, &discussion)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/discuss/%d", owner, repo, number), nil, &discussion)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +71,7 @@ func (c *Client) GetDiscussion(ctx context.Context, owner, repo string, number i
 // GET /repos/{owner}/{repo}/discuss/{number}/comment
 func (c *Client) ListDiscussionComments(ctx context.Context, owner, repo string, number int, opts ListOptions) ([]*DiscussionComment, error) {
 	var comments []*DiscussionComment
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/discuss/%d/comment?%s", owner, repo, number, opts.toQuery()), nil, &comments)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/discuss/%d/comment?%s", owner, repo, number, opts.toQuery()), nil, &comments)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +83,7 @@ func (c *Client) ListDiscussionComments(ctx context.Context, owner, repo string,
 // GET /repos/{owner}/{repo}/discuss/{number}/comment/{comment_id}/reply
 func (c *Client) ListDiscussionCommentReplies(ctx context.Context, owner, repo string, number int, commentID int64, opts ListOptions) ([]*DiscussionCommentReply, error) {
 	var replies []*DiscussionCommentReply
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/discuss/%d/comment/%d/reply?%s", owner, repo, number, commentID, opts.toQuery()), nil, &replies)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/discuss/%d/comment/%d/reply?%s", owner, repo, number, commentID, opts.toQuery()), nil, &replies)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +105,7 @@ type ForkSyncStatus struct {
 // GET /repos/{owner}/{repo}/sync-repo
 func (c *Client) GetForkSyncStatus(ctx context.Context, owner, repo string) (*ForkSyncStatus, error) {
 	var status ForkSyncStatus
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/sync-repo", owner, repo), nil, &status)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/sync-repo", owner, repo), nil, &status)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +116,7 @@ func (c *Client) GetForkSyncStatus(ctx context.Context, owner, repo string) (*Fo
 //
 // PUT /repos/{owner}/{repo}/sync-repo
 func (c *Client) SyncForkRepository(ctx context.Context, owner, repo string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/sync-repo", owner, repo), nil, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/sync-repo", owner, repo), nil, nil)
 }
 
 // --- Remote Mirrors ---
@@ -137,7 +136,7 @@ type RemoteMirror struct {
 // GET /repos/{owner}/{repo}/repo-remote-mirror
 func (c *Client) GetRepoRemoteMirror(ctx context.Context, owner, repo string) (*RemoteMirror, error) {
 	var mirror RemoteMirror
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/repo-remote-mirror", owner, repo), nil, &mirror)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/repo-remote-mirror", owner, repo), nil, &mirror)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +148,7 @@ func (c *Client) GetRepoRemoteMirror(ctx context.Context, owner, repo string) (*
 // GET /repos/{owner}/{repo}/push-remote-mirrors
 func (c *Client) ListPushRemoteMirrors(ctx context.Context, owner, repo string, opts ListOptions) ([]*RemoteMirror, error) {
 	var mirrors []*RemoteMirror
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/push-remote-mirrors?%s", owner, repo, opts.toQuery()), nil, &mirrors)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/push-remote-mirrors?%s", owner, repo, opts.toQuery()), nil, &mirrors)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +171,7 @@ type RepoLicense struct {
 // GET /repos/{owner}/{repo}/license
 func (c *Client) GetRepoLicense(ctx context.Context, owner, repo string) (*RepoLicense, error) {
 	var license RepoLicense
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/license", owner, repo), nil, &license)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/license", owner, repo), nil, &license)
 	if err != nil {
 		return nil, err
 	}
@@ -191,8 +190,8 @@ type RepoCLA struct {
 //
 // GET /repos/{owner}/{repo}/clas
 func (c *Client) ListRepoCLAs(ctx context.Context, owner, repo string) ([]*RepoCLA, error) {
-	var claList []*RepoCLA                                                                                //nolint:misspell // "clas" is the API endpoint name
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/clas", owner, repo), nil, &claList) //nolint:misspell // API endpoint
+	var claList []*RepoCLA                                                                          //nolint:misspell // "clas" is the API endpoint name
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/clas", owner, repo), nil, &claList) //nolint:misspell // API endpoint
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +203,7 @@ func (c *Client) ListRepoCLAs(ctx context.Context, owner, repo string) ([]*RepoC
 // PUT /repos/{owner}/{repo}/clas
 func (c *Client) ConfigureRepoCLA(ctx context.Context, owner, repo string, opts *RepoCLA) (*RepoCLA, error) {
 	var cla RepoCLA
-	err := c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/clas", owner, repo), opts, &cla) //nolint:misspell // API endpoint
+	err := c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/clas", owner, repo), opts, &cla) //nolint:misspell // API endpoint
 	if err != nil {
 		return nil, err
 	}

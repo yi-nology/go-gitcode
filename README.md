@@ -965,7 +965,9 @@ if err != nil {
 
 ### Rate Limit 自动重试
 
-配置自动重试策略，遇到 429/5xx 自动等待重试：
+配置自动重试策略，遇到 429/5xx 自动等待重试。服务端返回 `Retry-After`
+（delay-seconds 或 HTTP-date 均可）时优先采用该等待，但与指数退避共用
+`MaxBackoff` 上限；非正值与不可解析值回落指数退避：
 
 ```go
 client.SetRetryPolicy(gitcode.RetryPolicy{
@@ -979,7 +981,10 @@ client.SetRetryPolicy(gitcode.RetryPolicy{
 
 ### 自动分页
 
-自动遍历所有分页，无需手动处理 `Page` 参数：
+自动遍历所有分页，无需手动处理 `Page` 参数。分页游走以 50 页封顶
+（`per_page=100` × 50 页远超任何真实列表）：触顶时迭代器 yield 哨兵错误
+`gitcode.ErrTooManyPages`（`errors.Is` 可判定），表示结果被截断而非取完——
+服务端异常恒返满页时不会无限打请求：
 
 ```go
 // 收集所有结果到一个 slice

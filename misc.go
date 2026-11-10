@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -25,7 +24,7 @@ func (c *Client) ListGitignoreTemplates(ctx context.Context) ([]string, error) {
 // GET /gitignore/templates/{name}
 func (c *Client) GetGitignoreTemplate(ctx context.Context, name string) (*GitignoreTemplate, error) {
 	var template GitignoreTemplate
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/gitignore/templates/%s", name), nil, &template)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/gitignore/templates/%s", name), nil, &template)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +56,7 @@ func (c *Client) ListLicenseTemplates(ctx context.Context) ([]*LicenseTemplate, 
 // GET /licenses/{name}
 func (c *Client) GetLicenseTemplate(ctx context.Context, name string) (*LicenseTemplate, error) {
 	var template LicenseTemplate
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/licenses/%s", name), nil, &template)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/licenses/%s", name), nil, &template)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +96,7 @@ func (c *Client) ListLabelTemplates(ctx context.Context) ([]string, error) {
 // GET /label/templates/{name}
 func (c *Client) GetLabelTemplate(ctx context.Context, name string) ([]*Label, error) {
 	var labels []*Label
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/label/templates/%s", name), nil, &labels)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/label/templates/%s", name), nil, &labels)
 	if err != nil {
 		return nil, err
 	}
@@ -146,14 +145,10 @@ func (c *Client) RenderMarkdownRaw(ctx context.Context, markdown string) (string
 // GET /user/repos
 func (c *Client) ListCurrentUserRepositories(ctx context.Context, opts ListRepositoriesOptions) ([]*Repository, error) {
 	var repos []*Repository
-	query := opts.toQuery()
-	if opts.Type != "" {
-		query += "&type=" + opts.Type
-	}
-	if opts.Sort != "" {
-		query += "&sort=" + opts.Sort
-	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/repos?%s", query), nil, &repos)
+	// opts.toQuery() is ListRepositoriesOptions.toQuery, which already
+	// carries type/sort — the same helper ListRepositories uses, so the
+	// two entry points cannot diverge again (issue #10).
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/repos?%s", opts.toQuery()), nil, &repos)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +160,7 @@ func (c *Client) ListCurrentUserRepositories(ctx context.Context, opts ListRepos
 // GET /users/{username}/repos
 func (c *Client) ListUserRepositories(ctx context.Context, username string, opts ListOptions) ([]*Repository, error) {
 	var repos []*Repository
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/users/%s/repos?%s", username, opts.toQuery()), nil, &repos)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/users/%s/repos?%s", username, opts.toQuery()), nil, &repos)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +193,7 @@ type ExtendedUser struct {
 // GET /users/{username}
 func (c *Client) GetExtendedUser(ctx context.Context, username string) (*ExtendedUser, error) {
 	var user ExtendedUser
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/users/%s", username), nil, &user)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/users/%s", username), nil, &user)
 	if err != nil {
 		return nil, err
 	}

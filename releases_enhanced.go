@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -11,7 +10,7 @@ import (
 // GET /repos/{owner}/{repo}/releases/latest
 func (c *Client) GetLatestRelease(ctx context.Context, owner, repo string) (*Release, error) {
 	var release Release
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/releases/latest", owner, repo), nil, &release)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/releases/latest", owner, repo), nil, &release)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +32,7 @@ func (c *Client) GetReleaseUploadURL(ctx context.Context, owner, repo string, re
 	if label != "" {
 		body["label"] = label
 	}
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/releases/%d/assets/upload_url", owner, repo, releaseID), body, &result)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/releases/%d/assets/upload_url", owner, repo, releaseID), body, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -44,5 +43,5 @@ func (c *Client) GetReleaseUploadURL(ctx context.Context, owner, repo string, re
 //
 // GET /repos/{owner}/{repo}/releases/assets/{id}
 func (c *Client) DownloadReleaseAsset(ctx context.Context, owner, repo string, assetID int64) ([]byte, error) {
-	return c.doRawRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/releases/assets/%d", owner, repo, assetID))
+	return c.doRawRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/releases/assets/%d", owner, repo, assetID))
 }

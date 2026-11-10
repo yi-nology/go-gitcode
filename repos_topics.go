@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -16,7 +15,7 @@ type RepositoryTopics struct {
 // GET /repos/{owner}/{repo}/topics
 func (c *Client) ListRepositoryTopics(ctx context.Context, owner, repo string) ([]string, error) {
 	var result RepositoryTopics
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/topics", owner, repo), nil, &result)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/topics", owner, repo), nil, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +27,7 @@ func (c *Client) ListRepositoryTopics(ctx context.Context, owner, repo string) (
 // PUT /repos/{owner}/{repo}/topics
 func (c *Client) UpdateRepositoryTopics(ctx context.Context, owner, repo string, topics []string) ([]string, error) {
 	var result RepositoryTopics
-	err := c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/topics", owner, repo), map[string]interface{}{"topics": topics}, &result)
+	err := c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/topics", owner, repo), map[string]interface{}{"topics": topics}, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -39,12 +38,12 @@ func (c *Client) UpdateRepositoryTopics(ctx context.Context, owner, repo string,
 //
 // PUT /repos/{owner}/{repo}/topics/{topic}
 func (c *Client) AddRepositoryTopic(ctx context.Context, owner, repo, topic string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/topics/%s", owner, repo, topic), nil, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/topics/%s", owner, repo, topic), nil, nil)
 }
 
 // DeleteRepositoryTopic removes a single topic from a repository.
 //
 // DELETE /repos/{owner}/{repo}/topics/{topic}
 func (c *Client) DeleteRepositoryTopic(ctx context.Context, owner, repo, topic string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/topics/%s", owner, repo, topic), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/topics/%s", owner, repo, topic), nil, nil)
 }

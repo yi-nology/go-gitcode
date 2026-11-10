@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -22,7 +21,7 @@ type OrgCustomizedRole struct {
 // GET /org/{org}/customized-roles
 func (c *Client) ListOrgCustomizedRoles(ctx context.Context, org string) ([]*OrgCustomizedRole, error) {
 	var roles []*OrgCustomizedRole
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/org/%s/customized-roles", org), nil, &roles)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/org/%s/customized-roles", org), nil, &roles)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +71,7 @@ type OrgDiscussionCommentReply struct {
 // GET /orgs/{org}/discuss
 func (c *Client) ListOrgDiscussions(ctx context.Context, org string, opts ListOptions) ([]*OrgDiscussion, error) {
 	var discussions []*OrgDiscussion
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/discuss?%s", org, opts.toQuery()), nil, &discussions)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/discuss?%s", org, opts.toQuery()), nil, &discussions)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +83,7 @@ func (c *Client) ListOrgDiscussions(ctx context.Context, org string, opts ListOp
 // GET /orgs/{org}/discuss/{number}
 func (c *Client) GetOrgDiscussion(ctx context.Context, org string, number int) (*OrgDiscussion, error) {
 	var discussion OrgDiscussion
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/discuss/%d", org, number), nil, &discussion)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/discuss/%d", org, number), nil, &discussion)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +95,7 @@ func (c *Client) GetOrgDiscussion(ctx context.Context, org string, number int) (
 // GET /orgs/{org}/discuss/{number}/comment
 func (c *Client) ListOrgDiscussionComments(ctx context.Context, org string, number int, opts ListOptions) ([]*OrgDiscussionComment, error) {
 	var comments []*OrgDiscussionComment
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/discuss/%d/comment?%s", org, number, opts.toQuery()), nil, &comments)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/discuss/%d/comment?%s", org, number, opts.toQuery()), nil, &comments)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +107,7 @@ func (c *Client) ListOrgDiscussionComments(ctx context.Context, org string, numb
 // GET /orgs/{org}/discuss/{number}/comment/{comment_id}/reply
 func (c *Client) ListOrgDiscussionCommentReplies(ctx context.Context, org string, number int, commentID int64, opts ListOptions) ([]*OrgDiscussionCommentReply, error) {
 	var replies []*OrgDiscussionCommentReply
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/discuss/%d/comment/%d/reply?%s", org, number, commentID, opts.toQuery()), nil, &replies)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/discuss/%d/comment/%d/reply?%s", org, number, commentID, opts.toQuery()), nil, &replies)
 	if err != nil {
 		return nil, err
 	}
