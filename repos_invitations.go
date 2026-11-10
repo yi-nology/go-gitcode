@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -23,14 +22,14 @@ type RepoInvitation struct {
 //
 // PATCH /user/repository_invitations/{id}
 func (c *Client) AcceptRepoInvitation(ctx context.Context, invitationID int64) error {
-	return c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/user/repository_invitations/%d", invitationID), nil, nil)
+	return c.doRequest(ctx, http.MethodPatch, pathf("/user/repository_invitations/%d", invitationID), nil, nil)
 }
 
 // DeclineRepoInvitation declines a repository invitation.
 //
 // DELETE /user/repository_invitations/{id}
 func (c *Client) DeclineRepoInvitation(ctx context.Context, invitationID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/user/repository_invitations/%d", invitationID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/user/repository_invitations/%d", invitationID), nil, nil)
 }
 
 // ListPendingRepoInvitations lists pending repository invitations for the authenticated user.
@@ -38,7 +37,7 @@ func (c *Client) DeclineRepoInvitation(ctx context.Context, invitationID int64) 
 // GET /user/repository_invitations
 func (c *Client) ListPendingRepoInvitations(ctx context.Context, opts ListOptions) ([]*RepoInvitation, error) {
 	var invitations []*RepoInvitation
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/repository_invitations?%s", opts.toQuery()), nil, &invitations)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/repository_invitations?%s", opts.toQuery()), nil, &invitations)
 	if err != nil {
 		return nil, err
 	}

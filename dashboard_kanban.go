@@ -64,7 +64,7 @@ func (c *Client) ListKanbanBoards(ctx context.Context, org string, opts ListKanb
 		q.Set("search", opts.Search)
 	}
 	var list KanbanBoardList
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/org/%s/kanban/list?%s", org, q.Encode()), nil, &list)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/org/%s/kanban/list?%s", org, q.Encode()), nil, &list)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (c *Client) ListKanbanBoards(ctx context.Context, org string, opts ListKanb
 // GET /v5/org/{org}/kanban/{kanban_id}/detail (live-verified).
 func (c *Client) GetKanbanBoard(ctx context.Context, org, kanbanID string) (*KanbanBoard, error) {
 	var board KanbanBoard
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/org/%s/kanban/%s/detail", org, kanbanID), nil, &board)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/org/%s/kanban/%s/detail", org, kanbanID), nil, &board)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func (c *Client) ListKanbanBoardItems(ctx context.Context, org, kanbanID string,
 	setIf("title", opts.Title)
 	setIf("source_iids", opts.SourceIIDs)
 	var items []*KanbanBoardItem
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/org/%s/kanban/%s/item_list?%s", org, kanbanID, q.Encode()), nil, &items)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/org/%s/kanban/%s/item_list?%s", org, kanbanID, q.Encode()), nil, &items)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ type KanbanItemRef struct {
 // POST /v5/org/{org}/kanban/{kanban_id}/add_item (live-verified; the
 // response is an empty object per the docs).
 func (c *Client) AddToKanbanBoard(ctx context.Context, org, kanbanID string, items []KanbanItemRef) error {
-	return c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/org/%s/kanban/%s/add_item", org, kanbanID), items, nil)
+	return c.doRequest(ctx, http.MethodPost, pathf("/org/%s/kanban/%s/add_item", org, kanbanID), items, nil)
 }
 
 // UpdateKanbanBoardStatus sets a board open/closed (state: "open" or
@@ -168,7 +168,7 @@ func (c *Client) AddToKanbanBoard(ctx context.Context, org, kanbanID string, ite
 //
 // PUT /v5/org/{org}/kanban/{kanban_id}/state (live-verified).
 func (c *Client) UpdateKanbanBoardStatus(ctx context.Context, org, kanbanID, state string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/org/%s/kanban/%s/state", org, kanbanID), map[string]string{"state": state}, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/org/%s/kanban/%s/state", org, kanbanID), map[string]string{"state": state}, nil)
 }
 
 // RemoveFromKanbanBoard removes repo issues/PRs from a board.
@@ -176,5 +176,5 @@ func (c *Client) UpdateKanbanBoardStatus(ctx context.Context, org, kanbanID, sta
 // DELETE /v5/org/{org}/kanban/{kanban_id}/remove_item (live-verified; the
 // body is an array per the docs).
 func (c *Client) RemoveFromKanbanBoard(ctx context.Context, org, kanbanID string, items []KanbanItemRef) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/org/%s/kanban/%s/remove_item", org, kanbanID), items, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/org/%s/kanban/%s/remove_item", org, kanbanID), items, nil)
 }

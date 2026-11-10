@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -39,7 +38,7 @@ func userIssuesQuery(opts ListUserIssuesOptions) string {
 
 func (c *Client) ListUserIssues(ctx context.Context, opts ListUserIssuesOptions) ([]*Issue, error) {
 	var issues []*Issue
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/issues?%s", userIssuesQuery(opts)), nil, &issues)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/issues?%s", userIssuesQuery(opts)), nil, &issues)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +47,7 @@ func (c *Client) ListUserIssues(ctx context.Context, opts ListUserIssuesOptions)
 
 func (c *Client) ListOrgIssues(ctx context.Context, org string, opts ListUserIssuesOptions) ([]*Issue, error) {
 	var issues []*Issue
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/issues?%s", org, userIssuesQuery(opts)), nil, &issues)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/issues?%s", org, userIssuesQuery(opts)), nil, &issues)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +56,7 @@ func (c *Client) ListOrgIssues(ctx context.Context, org string, opts ListUserIss
 
 func (c *Client) ListRepoAllIssueComments(ctx context.Context, owner, repo string, opts ListOptions) ([]*IssueComment, error) {
 	var comments []*IssueComment
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/comments?%s", owner, repo, opts.toQuery()), nil, &comments)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/comments?%s", owner, repo, opts.toQuery()), nil, &comments)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +65,7 @@ func (c *Client) ListRepoAllIssueComments(ctx context.Context, owner, repo strin
 
 func (c *Client) GetIssueComment(ctx context.Context, owner, repo string, commentID int64) (*IssueComment, error) {
 	var comment IssueComment
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/comments/%d", owner, repo, commentID), nil, &comment)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/comments/%d", owner, repo, commentID), nil, &comment)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +81,7 @@ type IssueOperateLog struct {
 
 func (c *Client) GetIssueOperateLogs(ctx context.Context, owner, repo string, number int) ([]*IssueOperateLog, error) {
 	var logs []*IssueOperateLog
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/%d/operate_logs", owner, repo, number), nil, &logs)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/%d/operate_logs", owner, repo, number), nil, &logs)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +90,7 @@ func (c *Client) GetIssueOperateLogs(ctx context.Context, owner, repo string, nu
 
 func (c *Client) GetIssueLinkedPRs(ctx context.Context, owner, repo string, number int) ([]*PullRequest, error) {
 	var prs []*PullRequest
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issues/%d/pull_requests", owner, repo, number), nil, &prs)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issues/%d/pull_requests", owner, repo, number), nil, &prs)
 	if err != nil {
 		return nil, err
 	}

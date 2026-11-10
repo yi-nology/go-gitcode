@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -35,7 +34,7 @@ type CreateAnnotatedTagOptions struct {
 // GET /repos/{owner}/{repo}/git/tags/{sha}
 func (c *Client) GetAnnotatedTag(ctx context.Context, owner, repo, sha string) (*AnnotatedTag, error) {
 	var tag AnnotatedTag
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/git/tags/%s", owner, repo, sha), nil, &tag)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/git/tags/%s", owner, repo, sha), nil, &tag)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +46,7 @@ func (c *Client) GetAnnotatedTag(ctx context.Context, owner, repo, sha string) (
 // POST /repos/{owner}/{repo}/git/tags
 func (c *Client) CreateAnnotatedTag(ctx context.Context, owner, repo string, opts CreateAnnotatedTagOptions) (*AnnotatedTag, error) {
 	var tag AnnotatedTag
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/git/tags", owner, repo), opts, &tag)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/git/tags", owner, repo), opts, &tag)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +71,7 @@ type TagWithRelease struct {
 // GET /repos/{owner}/{repo}/tags
 func (c *Client) ListTagsWithOptions(ctx context.Context, owner, repo string, opts ListOptions) ([]*Tag, error) {
 	var tags []*Tag
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/tags?%s", owner, repo, opts.toQuery()), nil, &tags)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/tags?%s", owner, repo, opts.toQuery()), nil, &tags)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +83,7 @@ func (c *Client) ListTagsWithOptions(ctx context.Context, owner, repo string, op
 // GET /repos/{owner}/{repo}/tags/{tag}
 func (c *Client) GetTag(ctx context.Context, owner, repo, tagName string) (*Tag, error) {
 	var tag Tag
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/tags/%s", owner, repo, tagName), nil, &tag)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/tags/%s", owner, repo, tagName), nil, &tag)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +95,7 @@ func (c *Client) GetTag(ctx context.Context, owner, repo, tagName string) (*Tag,
 // POST /repos/{owner}/{repo}/tags
 func (c *Client) CreateTag(ctx context.Context, owner, repo string, opts CreateTagOptions) (*Tag, error) {
 	var tag Tag
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/tags", owner, repo), opts, &tag)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/tags", owner, repo), opts, &tag)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +114,7 @@ type CreateTagOptions struct {
 // GET /repos/{owner}/{repo}/releases/tags/{tag}
 func (c *Client) GetReleaseByTag(ctx context.Context, owner, repo, tag string) (*Release, error) {
 	var release Release
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/releases/tags/%s", owner, repo, tag), nil, &release)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/releases/tags/%s", owner, repo, tag), nil, &release)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +126,7 @@ func (c *Client) GetReleaseByTag(ctx context.Context, owner, repo, tag string) (
 // PATCH /repos/{owner}/{repo}/releases/{id}
 func (c *Client) UpdateRelease(ctx context.Context, owner, repo string, releaseID int64, opts UpdateReleaseOptions) (*Release, error) {
 	var release Release
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s/releases/%d", owner, repo, releaseID), opts, &release)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/repos/%s/%s/releases/%d", owner, repo, releaseID), opts, &release)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +148,7 @@ type UpdateReleaseOptions struct {
 // GET /repos/{owner}/{repo}/releases/{id}
 func (c *Client) GetRelease(ctx context.Context, owner, repo string, releaseID int64) (*Release, error) {
 	var release Release
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/releases/%d", owner, repo, releaseID), nil, &release)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/releases/%d", owner, repo, releaseID), nil, &release)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +159,7 @@ func (c *Client) GetRelease(ctx context.Context, owner, repo string, releaseID i
 //
 // DELETE /repos/{owner}/{repo}/releases/{id}
 func (c *Client) DeleteReleaseByID(ctx context.Context, owner, repo string, releaseID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/releases/%d", owner, repo, releaseID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/releases/%d", owner, repo, releaseID), nil, nil)
 }
 
 // ReleaseAsset represents a release asset.
@@ -180,7 +179,7 @@ type ReleaseAsset struct {
 // GET /repos/{owner}/{repo}/releases/{id}/assets
 func (c *Client) ListReleaseAssets(ctx context.Context, owner, repo string, releaseID int64, opts ListOptions) ([]*ReleaseAsset, error) {
 	var assets []*ReleaseAsset
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/releases/%d/assets?%s", owner, repo, releaseID, opts.toQuery()), nil, &assets)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/releases/%d/assets?%s", owner, repo, releaseID, opts.toQuery()), nil, &assets)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +191,7 @@ func (c *Client) ListReleaseAssets(ctx context.Context, owner, repo string, rele
 // GET /repos/{owner}/{repo}/releases/assets/{id}
 func (c *Client) GetReleaseAsset(ctx context.Context, owner, repo string, assetID int64) (*ReleaseAsset, error) {
 	var asset ReleaseAsset
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/releases/assets/%d", owner, repo, assetID), nil, &asset)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/releases/assets/%d", owner, repo, assetID), nil, &asset)
 	if err != nil {
 		return nil, err
 	}
@@ -203,5 +202,5 @@ func (c *Client) GetReleaseAsset(ctx context.Context, owner, repo string, assetI
 //
 // DELETE /repos/{owner}/{repo}/releases/assets/{id}
 func (c *Client) DeleteReleaseAsset(ctx context.Context, owner, repo string, assetID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/releases/assets/%d", owner, repo, assetID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/releases/assets/%d", owner, repo, assetID), nil, nil)
 }

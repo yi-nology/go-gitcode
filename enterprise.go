@@ -19,7 +19,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 )
@@ -37,7 +36,7 @@ type OrgEnterprise struct {
 // GET /v8/org/{org}/enterprise.
 func (c *Client) GetOrgEnterprise(ctx context.Context, org string) (*OrgEnterprise, error) {
 	var ent OrgEnterprise
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/org/%s/enterprise", org), nil, &ent)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/org/%s/enterprise", org), nil, &ent)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +68,7 @@ type EnterpriseCustomizedRole struct {
 // GET /v8/enterprise/{enterprise_id}/customized_roles.
 func (c *Client) ListEnterpriseCustomizedRoles(ctx context.Context, enterpriseID string) ([]*EnterpriseCustomizedRole, error) {
 	var roles []*EnterpriseCustomizedRole
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/enterprise/%s/customized_roles", enterpriseID), nil, &roles)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/enterprise/%s/customized_roles", enterpriseID), nil, &roles)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +121,7 @@ type UpdateEnterpriseMilestoneOptions struct {
 // GET /v8/enterprises/{enterprise_id}/milestones.
 func (c *Client) ListEnterpriseMilestones(ctx context.Context, enterpriseID string, opts ListOptions) ([]*EnterpriseMilestone, error) {
 	var milestones []*EnterpriseMilestone
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/milestones?%s", enterpriseID, opts.toQuery()), nil, &milestones)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/enterprises/%s/milestones?%s", enterpriseID, opts.toQuery()), nil, &milestones)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +133,7 @@ func (c *Client) ListEnterpriseMilestones(ctx context.Context, enterpriseID stri
 // GET /v8/enterprises/{enterprise_id}/milestones/{milestone_id}.
 func (c *Client) GetEnterpriseMilestone(ctx context.Context, enterpriseID, milestoneID string) (*EnterpriseMilestone, error) {
 	var milestone EnterpriseMilestone
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/milestones/%s", enterpriseID, milestoneID), nil, &milestone)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/enterprises/%s/milestones/%s", enterpriseID, milestoneID), nil, &milestone)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +145,7 @@ func (c *Client) GetEnterpriseMilestone(ctx context.Context, enterpriseID, miles
 // POST /v8/enterprises/{enterprise_id}/milestones.
 func (c *Client) CreateEnterpriseMilestone(ctx context.Context, enterpriseID string, opts CreateEnterpriseMilestoneOptions) (*EnterpriseMilestone, error) {
 	var milestone EnterpriseMilestone
-	err := c.doV8Request(ctx, http.MethodPost, fmt.Sprintf("/enterprises/%s/milestones", enterpriseID), opts, &milestone)
+	err := c.doV8Request(ctx, http.MethodPost, pathf("/enterprises/%s/milestones", enterpriseID), opts, &milestone)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +158,7 @@ func (c *Client) CreateEnterpriseMilestone(ctx context.Context, enterpriseID str
 // PUT /v8/enterprises/{enterprise_id}/milestones/{milestone_id}.
 func (c *Client) UpdateEnterpriseMilestone(ctx context.Context, enterpriseID, milestoneID string, opts UpdateEnterpriseMilestoneOptions) (*EnterpriseMilestone, error) {
 	var milestone EnterpriseMilestone
-	err := c.doV8Request(ctx, http.MethodPut, fmt.Sprintf("/enterprises/%s/milestones/%s", enterpriseID, milestoneID), opts, &milestone)
+	err := c.doV8Request(ctx, http.MethodPut, pathf("/enterprises/%s/milestones/%s", enterpriseID, milestoneID), opts, &milestone)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +169,7 @@ func (c *Client) UpdateEnterpriseMilestone(ctx context.Context, enterpriseID, mi
 //
 // DELETE /v8/enterprises/{enterprise_id}/milestones/{milestone_id}.
 func (c *Client) DeleteEnterpriseMilestone(ctx context.Context, enterpriseID, milestoneID string) error {
-	return c.doV8Request(ctx, http.MethodDelete, fmt.Sprintf("/enterprises/%s/milestones/%s", enterpriseID, milestoneID), nil, nil)
+	return c.doV8Request(ctx, http.MethodDelete, pathf("/enterprises/%s/milestones/%s", enterpriseID, milestoneID), nil, nil)
 }
 
 // --- Labels ---
@@ -208,7 +207,7 @@ type UpdateEnterpriseLabelOptions struct {
 // POST /v8/enterprises/{enterprise_id}/label (singular on the wire).
 func (c *Client) CreateEnterpriseLabel(ctx context.Context, enterpriseID string, opts CreateEnterpriseLabelOptions) (*EnterpriseLabel, error) {
 	var label EnterpriseLabel
-	err := c.doV8Request(ctx, http.MethodPost, fmt.Sprintf("/enterprises/%s/label", enterpriseID), opts, &label)
+	err := c.doV8Request(ctx, http.MethodPost, pathf("/enterprises/%s/label", enterpriseID), opts, &label)
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +219,7 @@ func (c *Client) CreateEnterpriseLabel(ctx context.Context, enterpriseID string,
 // PUT /v8/enterprises/{enterprise_id}/label/{label_id}.
 func (c *Client) UpdateEnterpriseLabel(ctx context.Context, enterpriseID, labelID string, opts UpdateEnterpriseLabelOptions) (*EnterpriseLabel, error) {
 	var label EnterpriseLabel
-	err := c.doV8Request(ctx, http.MethodPut, fmt.Sprintf("/enterprises/%s/label/%s", enterpriseID, labelID), opts, &label)
+	err := c.doV8Request(ctx, http.MethodPut, pathf("/enterprises/%s/label/%s", enterpriseID, labelID), opts, &label)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +230,7 @@ func (c *Client) UpdateEnterpriseLabel(ctx context.Context, enterpriseID, labelI
 //
 // DELETE /v8/enterprises/{enterprise_id}/label/{label_id}.
 func (c *Client) DeleteEnterpriseLabel(ctx context.Context, enterpriseID, labelID string) error {
-	return c.doV8Request(ctx, http.MethodDelete, fmt.Sprintf("/enterprises/%s/label/%s", enterpriseID, labelID), nil, nil)
+	return c.doV8Request(ctx, http.MethodDelete, pathf("/enterprises/%s/label/%s", enterpriseID, labelID), nil, nil)
 }
 
 // --- Members ---
@@ -272,7 +271,7 @@ type EnterpriseMemberOptions struct {
 // POST /v8/enterprises/{enterprise_id}/memberships/{username}.
 func (c *Client) InviteEnterpriseMember(ctx context.Context, enterpriseID, username string, opts EnterpriseMemberOptions) (*EnterpriseMember, error) {
 	var member EnterpriseMember
-	err := c.doV8Request(ctx, http.MethodPost, fmt.Sprintf("/enterprises/%s/memberships/%s", enterpriseID, username), opts, &member)
+	err := c.doV8Request(ctx, http.MethodPost, pathf("/enterprises/%s/memberships/%s", enterpriseID, username), opts, &member)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +284,7 @@ func (c *Client) InviteEnterpriseMember(ctx context.Context, enterpriseID, usern
 // PUT /v8/enterprises/{enterprise_id}/members/{username}.
 func (c *Client) UpdateEnterpriseMemberPermission(ctx context.Context, enterpriseID, username string, opts EnterpriseMemberOptions) (*EnterpriseMember, error) {
 	var member EnterpriseMember
-	err := c.doV8Request(ctx, http.MethodPut, fmt.Sprintf("/enterprises/%s/members/%s", enterpriseID, username), opts, &member)
+	err := c.doV8Request(ctx, http.MethodPut, pathf("/enterprises/%s/members/%s", enterpriseID, username), opts, &member)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +298,7 @@ func (c *Client) UpdateEnterpriseMemberPermission(ctx context.Context, enterpris
 // GET /v8/enterprises/{enterprise_id}/members.
 func (c *Client) ListEnterpriseMembers(ctx context.Context, enterpriseID string, opts ListOptions) ([]*EnterpriseMember, error) {
 	var members []*EnterpriseMember
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/members?%s", enterpriseID, opts.toQuery()), nil, &members)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/enterprises/%s/members?%s", enterpriseID, opts.toQuery()), nil, &members)
 	if err != nil {
 		return nil, err
 	}
@@ -311,7 +310,7 @@ func (c *Client) ListEnterpriseMembers(ctx context.Context, enterpriseID string,
 // GET /v8/enterprises/{enterprise_id}/members/{username}.
 func (c *Client) GetEnterpriseMember(ctx context.Context, enterpriseID, username string) (*EnterpriseMember, error) {
 	var member EnterpriseMember
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/members/%s", enterpriseID, username), nil, &member)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/enterprises/%s/members/%s", enterpriseID, username), nil, &member)
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +322,7 @@ func (c *Client) GetEnterpriseMember(ctx context.Context, enterpriseID, username
 //
 // DELETE /v8/enterprises/{enterprise_id}/members/{usernames}.
 func (c *Client) DeleteEnterpriseMember(ctx context.Context, enterpriseID string, usernames ...string) error {
-	return c.doV8Request(ctx, http.MethodDelete, fmt.Sprintf("/enterprises/%s/members/%s", enterpriseID, strings.Join(usernames, ",")), nil, nil)
+	return c.doV8Request(ctx, http.MethodDelete, pathf("/enterprises/%s/members/%s", enterpriseID, strings.Join(usernames, ",")), nil, nil)
 }
 
 // --- Issue custom fields ---
@@ -371,7 +370,7 @@ type EnterpriseCustomField struct {
 // GET /v8/enterprises/{enterprise_id}/issue_extend_field.
 func (c *Client) ListEnterpriseIssueCustomFields(ctx context.Context, enterpriseID string, opts ListOptions) ([]*EnterpriseCustomField, error) {
 	var fields []*EnterpriseCustomField
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/enterprises/%s/issue_extend_field?%s", enterpriseID, opts.toQuery()), nil, &fields)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/enterprises/%s/issue_extend_field?%s", enterpriseID, opts.toQuery()), nil, &fields)
 	if err != nil {
 		return nil, err
 	}
@@ -496,7 +495,7 @@ func (c *Client) ListEnterpriseIssues(ctx context.Context, enterpriseID string, 
 		opts.PerPage = 20
 	}
 	var issues []*EnterpriseIssue
-	err := c.doV8Request(ctx, http.MethodPost, fmt.Sprintf("/enterprises/%s/issues", enterpriseID), opts, &issues)
+	err := c.doV8Request(ctx, http.MethodPost, pathf("/enterprises/%s/issues", enterpriseID), opts, &issues)
 	if err != nil {
 		return nil, err
 	}

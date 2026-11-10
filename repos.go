@@ -2,8 +2,8 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -57,11 +57,30 @@ type ListRepositoriesOptions struct {
 	Sort  string `json:"sort,omitempty"`
 }
 
+// toQuery renders the pagination plus the type/sort filter parameters.
+//
+// It is defined on ListRepositoriesOptions (shadowing the embedded
+// ListOptions.toQuery) so that every consumer of the struct —
+// ListRepositories and ListCurrentUserRepositories, which hit the same
+// /user/repos endpoint — builds the identical query. ListRepositories used
+// to drop Type/Sort silently while its sibling sent them (issue #10);
+// funneling both through this method keeps them from diverging again.
+func (o ListRepositoriesOptions) toQuery() string {
+	q := o.ListOptions.toQuery()
+	if o.Type != "" {
+		q += "&type=" + url.QueryEscape(o.Type)
+	}
+	if o.Sort != "" {
+		q += "&sort=" + url.QueryEscape(o.Sort)
+	}
+	return q
+}
+
 func (c *Client) ListRepositories(ctx context.Context, opts ListRepositoriesOptions) ([]*Repository, error) {
 	var repos []*Repository
-	path := fmt.Sprintf("/user/repos?%s", opts.toQuery())
+	path := pathf("/user/repos?%s", opts.toQuery())
 	if opts.Owner != "" {
-		path = fmt.Sprintf("/users/%s/repos?%s", opts.Owner, opts.toQuery())
+		path = pathf("/users/%s/repos?%s", opts.Owner, opts.toQuery())
 	}
 	err := c.doRequest(ctx, http.MethodGet, path, nil, &repos)
 	if err != nil {
@@ -72,7 +91,7 @@ func (c *Client) ListRepositories(ctx context.Context, opts ListRepositoriesOpti
 
 func (c *Client) GetRepository(ctx context.Context, owner, repo string) (*Repository, error) {
 	var r Repository
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s", owner, repo), nil, &r)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s", owner, repo), nil, &r)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +109,7 @@ func (c *Client) CreateRepository(ctx context.Context, opts CreateRepositoryOpti
 
 func (c *Client) UpdateRepository(ctx context.Context, owner, repo string, opts UpdateRepositoryOptions) (*Repository, error) {
 	var r Repository
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s", owner, repo), opts, &r)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/repos/%s/%s", owner, repo), opts, &r)
 	if err != nil {
 		return nil, err
 	}
@@ -98,12 +117,12 @@ func (c *Client) UpdateRepository(ctx context.Context, owner, repo string, opts 
 }
 
 func (c *Client) DeleteRepository(ctx context.Context, owner, repo string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s", owner, repo), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s", owner, repo), nil, nil)
 }
 
 func (c *Client) ForkRepository(ctx context.Context, owner, repo string, opts *CreateRepositoryOptions) (*Repository, error) {
 	var r Repository
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/forks", owner, repo), opts, &r)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/forks", owner, repo), opts, &r)
 	if err != nil {
 		return nil, err
 	}
@@ -126,11 +145,11 @@ type RepositoryContent struct {
 
 func (c *Client) GetRepositoryContent(ctx context.Context, owner, repo, path, ref string) (*RepositoryContent, error) {
 	var content RepositoryContent
-	url := fmt.Sprintf("/repos/%s/%s/contents/%s", owner, repo, path)
+	reqPath := pathf("/repos/%s/%s/contents/%s", owner, repo, pathSegs(path))
 	if ref != "" {
-		url += "?ref=" + ref
+		reqPath += "?ref=" + url.QueryEscape(ref)
 	}
-	err := c.doRequest(ctx, http.MethodGet, url, nil, &content)
+	err := c.doRequest(ctx, http.MethodGet, reqPath, nil, &content)
 	if err != nil {
 		return nil, err
 	}
@@ -139,11 +158,11 @@ func (c *Client) GetRepositoryContent(ctx context.Context, owner, repo, path, re
 
 func (c *Client) ListRepositoryContents(ctx context.Context, owner, repo, path, ref string) ([]*RepositoryContent, error) {
 	var contents []*RepositoryContent
-	url := fmt.Sprintf("/repos/%s/%s/contents/%s", owner, repo, path)
+	reqPath := pathf("/repos/%s/%s/contents/%s", owner, repo, pathSegs(path))
 	if ref != "" {
-		url += "?ref=" + ref
+		reqPath += "?ref=" + url.QueryEscape(ref)
 	}
-	err := c.doRequest(ctx, http.MethodGet, url, nil, &contents)
+	err := c.doRequest(ctx, http.MethodGet, reqPath, nil, &contents)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +195,7 @@ type FileResult struct {
 
 func (c *Client) CreateFile(ctx context.Context, owner, repo, path string, opts CreateFileOptions) (*FileResult, error) {
 	var result FileResult
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/contents/%s", owner, repo, path), opts, &result)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/contents/%s", owner, repo, pathSegs(path)), opts, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +204,7 @@ func (c *Client) CreateFile(ctx context.Context, owner, repo, path string, opts 
 
 func (c *Client) UpdateFile(ctx context.Context, owner, repo, path string, opts UpdateFileOptions) (*FileResult, error) {
 	var result FileResult
-	err := c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/contents/%s", owner, repo, path), opts, &result)
+	err := c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/contents/%s", owner, repo, pathSegs(path)), opts, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +213,7 @@ func (c *Client) UpdateFile(ctx context.Context, owner, repo, path string, opts 
 
 func (c *Client) DeleteFile(ctx context.Context, owner, repo, path string, opts DeleteFileOptions) (*FileResult, error) {
 	var result FileResult
-	err := c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/contents/%s", owner, repo, path), opts, &result)
+	err := c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/contents/%s", owner, repo, pathSegs(path)), opts, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +229,7 @@ type Tag struct {
 
 func (c *Client) ListTags(ctx context.Context, owner, repo string) ([]*Tag, error) {
 	var tags []*Tag
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/tags?per_page=100", owner, repo), nil, &tags)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/tags?per_page=100", owner, repo), nil, &tags)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +260,7 @@ type CreateReleaseOptions struct {
 
 func (c *Client) ListReleases(ctx context.Context, owner, repo string) ([]*Release, error) {
 	var releases []*Release
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/releases?per_page=100", owner, repo), nil, &releases)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/releases?per_page=100", owner, repo), nil, &releases)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +269,7 @@ func (c *Client) ListReleases(ctx context.Context, owner, repo string) ([]*Relea
 
 func (c *Client) CreateRelease(ctx context.Context, owner, repo string, opts CreateReleaseOptions) (*Release, error) {
 	var r Release
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/releases", owner, repo), opts, &r)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/releases", owner, repo), opts, &r)
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +277,7 @@ func (c *Client) CreateRelease(ctx context.Context, owner, repo string, opts Cre
 }
 
 func (c *Client) DeleteRelease(ctx context.Context, owner, repo string, tagName string) error {
-	err := c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/releases/tags/%s", owner, repo, tagName), nil, nil)
+	err := c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/releases/tags/%s", owner, repo, tagName), nil, nil)
 	if err == nil {
 		return nil
 	}
@@ -266,7 +285,7 @@ func (c *Client) DeleteRelease(ctx context.Context, owner, repo string, tagName 
 }
 
 func (c *Client) DeleteTag(ctx context.Context, owner, repo, tagName string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/tags/%s", owner, repo, tagName), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/tags/%s", owner, repo, tagName), nil, nil)
 }
 
 type Contributor struct {
@@ -278,7 +297,7 @@ type Contributor struct {
 
 func (c *Client) ListContributors(ctx context.Context, owner, repo string) ([]*Contributor, error) {
 	var contributors []*Contributor
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/contributors?per_page=100", owner, repo), nil, &contributors)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/contributors?per_page=100", owner, repo), nil, &contributors)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +308,7 @@ type Language map[string]int
 
 func (c *Client) GetLanguages(ctx context.Context, owner, repo string) (Language, error) {
 	var lang Language
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/languages", owner, repo), nil, &lang)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/languages", owner, repo), nil, &lang)
 	if err != nil {
 		return nil, err
 	}
@@ -297,11 +316,11 @@ func (c *Client) GetLanguages(ctx context.Context, owner, repo string) (Language
 }
 
 func (c *Client) GetRawFile(ctx context.Context, owner, repo, path, ref string) ([]byte, error) {
-	url := fmt.Sprintf("/repos/%s/%s/raw/%s", owner, repo, path)
+	reqPath := pathf("/repos/%s/%s/raw/%s", owner, repo, pathSegs(path))
 	if ref != "" {
-		url += "?ref=" + ref
+		reqPath += "?ref=" + url.QueryEscape(ref)
 	}
-	return c.doRawRequest(ctx, http.MethodGet, url)
+	return c.doRawRequest(ctx, http.MethodGet, reqPath)
 }
 
 type GitTree struct {
@@ -322,7 +341,7 @@ type GitTreeEntry struct {
 
 func (c *Client) GetTree(ctx context.Context, owner, repo, sha string, recursive bool) (*GitTree, error) {
 	var tree GitTree
-	url := fmt.Sprintf("/repos/%s/%s/git/trees/%s", owner, repo, sha)
+	url := pathf("/repos/%s/%s/git/trees/%s", owner, repo, sha)
 	if recursive {
 		url += "?recursive=1"
 	}
@@ -343,7 +362,7 @@ type GitBlob struct {
 
 func (c *Client) GetBlob(ctx context.Context, owner, repo, sha string) (*GitBlob, error) {
 	var blob GitBlob
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/git/blobs/%s", owner, repo, sha), nil, &blob)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/git/blobs/%s", owner, repo, sha), nil, &blob)
 	if err != nil {
 		return nil, err
 	}
@@ -352,7 +371,7 @@ func (c *Client) GetBlob(ctx context.Context, owner, repo, sha string) (*GitBlob
 
 func (c *Client) ListForks(ctx context.Context, owner, repo string, opts ListOptions) ([]*Repository, error) {
 	var forks []*Repository
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/forks?%s", owner, repo, opts.toQuery()), nil, &forks)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/forks?%s", owner, repo, opts.toQuery()), nil, &forks)
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +380,7 @@ func (c *Client) ListForks(ctx context.Context, owner, repo string, opts ListOpt
 
 func (c *Client) ListWatchers(ctx context.Context, owner, repo string, opts ListOptions) ([]*User, error) {
 	var watchers []*User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/subscribers?%s", owner, repo, opts.toQuery()), nil, &watchers)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/subscribers?%s", owner, repo, opts.toQuery()), nil, &watchers)
 	if err != nil {
 		return nil, err
 	}
@@ -370,7 +389,7 @@ func (c *Client) ListWatchers(ctx context.Context, owner, repo string, opts List
 
 func (c *Client) ListStargazers(ctx context.Context, owner, repo string, opts ListOptions) ([]*User, error) {
 	var stargazers []*User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/stargazers?%s", owner, repo, opts.toQuery()), nil, &stargazers)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/stargazers?%s", owner, repo, opts.toQuery()), nil, &stargazers)
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +409,7 @@ type ContributorStatistic struct {
 
 func (c *Client) GetContributorStatistics(ctx context.Context, owner, repo string) ([]*ContributorStatistic, error) {
 	var stats []*ContributorStatistic
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/contributors/statistic", owner, repo), nil, &stats)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/contributors/statistic", owner, repo), nil, &stats)
 	if err != nil {
 		return nil, err
 	}
@@ -408,7 +427,7 @@ type RepoEvent struct {
 
 func (c *Client) ListRepoEvents(ctx context.Context, owner, repo string, opts ListOptions) ([]*RepoEvent, error) {
 	var events []*RepoEvent
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/events?%s", owner, repo, opts.toQuery()), nil, &events)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/events?%s", owner, repo, opts.toQuery()), nil, &events)
 	if err != nil {
 		return nil, err
 	}
@@ -428,7 +447,7 @@ type RepoSettings struct {
 
 func (c *Client) GetRepoSettings(ctx context.Context, owner, repo string) (*RepoSettings, error) {
 	var settings RepoSettings
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/repo_settings", owner, repo), nil, &settings)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/repo_settings", owner, repo), nil, &settings)
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +456,7 @@ func (c *Client) GetRepoSettings(ctx context.Context, owner, repo string) (*Repo
 
 func (c *Client) UpdateRepoSettings(ctx context.Context, owner, repo string, opts *RepoSettings) (*RepoSettings, error) {
 	var settings RepoSettings
-	err := c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/repo_settings", owner, repo), opts, &settings)
+	err := c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/repo_settings", owner, repo), opts, &settings)
 	if err != nil {
 		return nil, err
 	}
@@ -462,7 +481,7 @@ type CreateOrgRepoOptions struct {
 
 func (c *Client) CreateOrgRepository(ctx context.Context, org string, opts CreateOrgRepoOptions) (*Repository, error) {
 	var r Repository
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/orgs/%s/repos", org), opts, &r)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/orgs/%s/repos", org), opts, &r)
 	if err != nil {
 		return nil, err
 	}
@@ -475,7 +494,7 @@ func (c *Client) ListOrgRepositories(ctx context.Context, org, repoType string, 
 	if repoType != "" {
 		query += "&type=" + repoType
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/repos?%s", org, query), nil, &repos)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/repos?%s", org, query), nil, &repos)
 	if err != nil {
 		return nil, err
 	}
@@ -487,7 +506,7 @@ type TransferRepoOptions struct {
 }
 
 func (c *Client) TransferRepository(ctx context.Context, owner, repo string, opts TransferRepoOptions) error {
-	return c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/transfer", owner, repo), opts, nil)
+	return c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/transfer", owner, repo), opts, nil)
 }
 
 type ArchiveStatus struct {
@@ -496,7 +515,7 @@ type ArchiveStatus struct {
 
 func (c *Client) GetArchiveStatus(ctx context.Context, owner, repo string) (*ArchiveStatus, error) {
 	var status ArchiveStatus
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/transition", owner, repo), nil, &status)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/transition", owner, repo), nil, &status)
 	if err != nil {
 		return nil, err
 	}
@@ -504,7 +523,7 @@ func (c *Client) GetArchiveStatus(ctx context.Context, owner, repo string) (*Arc
 }
 
 func (c *Client) ArchiveRepository(ctx context.Context, owner, repo string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/transition", owner, repo), nil, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/transition", owner, repo), nil, nil)
 }
 
 type UpdateMemberOptions struct {
@@ -512,7 +531,7 @@ type UpdateMemberOptions struct {
 }
 
 func (c *Client) UpdateRepoMember(ctx context.Context, owner, repo, username string, opts UpdateMemberOptions) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/members/%s", owner, repo, username), opts, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/members/%s", owner, repo, username), opts, nil)
 }
 
 type FileUploadResult struct {
@@ -522,7 +541,7 @@ type FileUploadResult struct {
 func (c *Client) UploadFile(ctx context.Context, owner, repo string, filePath string) (*FileUploadResult, error) {
 	var result FileUploadResult
 	body := map[string]string{"file": filePath}
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/file/upload", owner, repo), body, &result)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/file/upload", owner, repo), body, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -532,7 +551,7 @@ func (c *Client) UploadFile(ctx context.Context, owner, repo string, filePath st
 func (c *Client) UploadImage(ctx context.Context, owner, repo string, filePath string) (*FileUploadResult, error) {
 	var result FileUploadResult
 	body := map[string]string{"file": filePath}
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/img/upload", owner, repo), body, &result)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/img/upload", owner, repo), body, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -547,7 +566,7 @@ type PushConfig struct {
 
 func (c *Client) GetPushConfig(ctx context.Context, owner, repo string) (*PushConfig, error) {
 	var config PushConfig
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/push_config", owner, repo), nil, &config)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/push_config", owner, repo), nil, &config)
 	if err != nil {
 		return nil, err
 	}
@@ -555,7 +574,7 @@ func (c *Client) GetPushConfig(ctx context.Context, owner, repo string) (*PushCo
 }
 
 func (c *Client) UpdatePushConfig(ctx context.Context, owner, repo string, config *PushConfig) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/push_config", owner, repo), config, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/push_config", owner, repo), config, nil)
 }
 
 type PRSettings struct {
@@ -565,7 +584,7 @@ type PRSettings struct {
 
 func (c *Client) GetPRSettings(ctx context.Context, owner, repo string) (*PRSettings, error) {
 	var settings PRSettings
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/pull_request_settings", owner, repo), nil, &settings)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/pull_request_settings", owner, repo), nil, &settings)
 	if err != nil {
 		return nil, err
 	}
@@ -573,7 +592,7 @@ func (c *Client) GetPRSettings(ctx context.Context, owner, repo string) (*PRSett
 }
 
 func (c *Client) UpdatePRSettings(ctx context.Context, owner, repo string, settings *PRSettings) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/pull_request_settings", owner, repo), settings, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/pull_request_settings", owner, repo), settings, nil)
 }
 
 type FileListEntry struct {
@@ -584,7 +603,7 @@ type FileListEntry struct {
 
 func (c *Client) ListFiles(ctx context.Context, owner, repo string) ([]*FileListEntry, error) {
 	var files []*FileListEntry
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/file_list", owner, repo), nil, &files)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/file_list", owner, repo), nil, &files)
 	if err != nil {
 		return nil, err
 	}
@@ -598,7 +617,7 @@ type ModuleSetting struct {
 }
 
 func (c *Client) SetModuleSetting(ctx context.Context, owner, repo string, setting ModuleSetting) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/module/setting", owner, repo), setting, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/module/setting", owner, repo), setting, nil)
 }
 
 type CustomizedRole struct {
@@ -609,7 +628,7 @@ type CustomizedRole struct {
 
 func (c *Client) GetCustomizedRoles(ctx context.Context, owner, repo string) ([]*CustomizedRole, error) {
 	var roles []*CustomizedRole
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/customized_roles", owner, repo), nil, &roles)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/customized_roles", owner, repo), nil, &roles)
 	if err != nil {
 		return nil, err
 	}
@@ -622,7 +641,7 @@ type ReviewerConfig struct {
 }
 
 func (c *Client) UpdateReviewerConfig(ctx context.Context, owner, repo string, config ReviewerConfig) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/reviewer", owner, repo), config, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/reviewer", owner, repo), config, nil)
 }
 
 type DownloadStatistic struct {
@@ -632,7 +651,7 @@ type DownloadStatistic struct {
 
 func (c *Client) GetDownloadStatistics(ctx context.Context, owner, repo string) ([]*DownloadStatistic, error) {
 	var stats []*DownloadStatistic
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/download_statistics", owner, repo), nil, &stats)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/download_statistics", owner, repo), nil, &stats)
 	if err != nil {
 		return nil, err
 	}
@@ -640,9 +659,9 @@ func (c *Client) GetDownloadStatistics(ctx context.Context, owner, repo string) 
 }
 
 func (c *Client) UpdateOrgRepoStatus(ctx context.Context, org, repo, status string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/org/%s/repo/%s/status", org, repo), map[string]string{"status": status}, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/org/%s/repo/%s/status", org, repo), map[string]string{"status": status}, nil)
 }
 
 func (c *Client) TransferToOrg(ctx context.Context, org, repo, newOwner string) error {
-	return c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/org/%s/projects/%s/transfer", org, repo), map[string]string{"new_owner": newOwner}, nil)
+	return c.doRequest(ctx, http.MethodPost, pathf("/org/%s/projects/%s/transfer", org, repo), map[string]string{"new_owner": newOwner}, nil)
 }

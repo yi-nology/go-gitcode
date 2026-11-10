@@ -3,7 +3,6 @@ package gitcode
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -84,7 +83,7 @@ func (c *Client) ListWebhooks(ctx context.Context, owner, repo string) ([]*Webho
 // pagination (GET /repos/{owner}/{repo}/hooks).
 func (c *Client) ListWebhooksWithOptions(ctx context.Context, owner, repo string, opts ListOptions) ([]*Webhook, error) {
 	var hooks []*Webhook
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/hooks?%s", owner, repo, opts.toQuery()), nil, &hooks)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/hooks?%s", owner, repo, opts.toQuery()), nil, &hooks)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +92,7 @@ func (c *Client) ListWebhooksWithOptions(ctx context.Context, owner, repo string
 
 func (c *Client) GetWebhook(ctx context.Context, owner, repo string, hookID int64) (*Webhook, error) {
 	var hook Webhook
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/hooks/%d", owner, repo, hookID), nil, &hook)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/hooks/%d", owner, repo, hookID), nil, &hook)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +101,7 @@ func (c *Client) GetWebhook(ctx context.Context, owner, repo string, hookID int6
 
 func (c *Client) CreateWebhook(ctx context.Context, owner, repo string, opts CreateWebhookOptions) (*Webhook, error) {
 	var hook Webhook
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/hooks", owner, repo), opts, &hook)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/hooks", owner, repo), opts, &hook)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +110,7 @@ func (c *Client) CreateWebhook(ctx context.Context, owner, repo string, opts Cre
 
 func (c *Client) UpdateWebhook(ctx context.Context, owner, repo string, hookID int64, opts UpdateWebhookOptions) (*Webhook, error) {
 	var hook Webhook
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s/hooks/%d", owner, repo, hookID), opts, &hook)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/repos/%s/%s/hooks/%d", owner, repo, hookID), opts, &hook)
 	if err != nil {
 		return nil, err
 	}
@@ -119,11 +118,11 @@ func (c *Client) UpdateWebhook(ctx context.Context, owner, repo string, hookID i
 }
 
 func (c *Client) DeleteWebhook(ctx context.Context, owner, repo string, hookID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/hooks/%d", owner, repo, hookID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/hooks/%d", owner, repo, hookID), nil, nil)
 }
 
 func (c *Client) TestWebhook(ctx context.Context, owner, repo string, hookID int64) error {
-	return c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/hooks/%d/tests", owner, repo, hookID), nil, nil)
+	return c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/hooks/%d/tests", owner, repo, hookID), nil, nil)
 }
 
 type WebhookEvent struct {

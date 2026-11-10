@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -11,7 +10,7 @@ import (
 // GET /users/{username}/followers
 func (c *Client) ListUserFollowers(ctx context.Context, username string, opts ListOptions) ([]*User, error) {
 	var users []*User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/users/%s/followers?%s", username, opts.toQuery()), nil, &users)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/users/%s/followers?%s", username, opts.toQuery()), nil, &users)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +22,7 @@ func (c *Client) ListUserFollowers(ctx context.Context, username string, opts Li
 // GET /user/followers
 func (c *Client) ListCurrentUserFollowers(ctx context.Context, opts ListOptions) ([]*User, error) {
 	var users []*User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/followers?%s", opts.toQuery()), nil, &users)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/followers?%s", opts.toQuery()), nil, &users)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +34,7 @@ func (c *Client) ListCurrentUserFollowers(ctx context.Context, opts ListOptions)
 // GET /users/{username}/following
 func (c *Client) ListUserFollowing(ctx context.Context, username string, opts ListOptions) ([]*User, error) {
 	var users []*User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/users/%s/following?%s", username, opts.toQuery()), nil, &users)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/users/%s/following?%s", username, opts.toQuery()), nil, &users)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +46,7 @@ func (c *Client) ListUserFollowing(ctx context.Context, username string, opts Li
 // GET /user/following
 func (c *Client) ListCurrentUserFollowing(ctx context.Context, opts ListOptions) ([]*User, error) {
 	var users []*User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/following?%s", opts.toQuery()), nil, &users)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/following?%s", opts.toQuery()), nil, &users)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +57,7 @@ func (c *Client) ListCurrentUserFollowing(ctx context.Context, opts ListOptions)
 //
 // GET /user/following/{username}
 func (c *Client) IsFollowing(ctx context.Context, username string) (bool, error) {
-	_, err := c.doRawRequest(ctx, http.MethodGet, fmt.Sprintf("/user/following/%s", username))
+	_, err := c.doRawRequest(ctx, http.MethodGet, pathf("/user/following/%s", username))
 	if err != nil {
 		if isNotFoundError(err) {
 			return false, nil
@@ -72,12 +71,12 @@ func (c *Client) IsFollowing(ctx context.Context, username string) (bool, error)
 //
 // PUT /user/following/{username}
 func (c *Client) FollowUser(ctx context.Context, username string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/user/following/%s", username), nil, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/user/following/%s", username), nil, nil)
 }
 
 // UnfollowUser unfollows a user.
 //
 // DELETE /user/following/{username}
 func (c *Client) UnfollowUser(ctx context.Context, username string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/user/following/%s", username), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/user/following/%s", username), nil, nil)
 }

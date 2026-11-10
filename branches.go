@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -49,7 +48,7 @@ type BranchProtection struct {
 
 func (c *Client) ListBranches(ctx context.Context, owner, repo string) ([]*Branch, error) {
 	var branches []*Branch
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/branches?per_page=100", owner, repo), nil, &branches)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/branches?per_page=100", owner, repo), nil, &branches)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +57,7 @@ func (c *Client) ListBranches(ctx context.Context, owner, repo string) ([]*Branc
 
 func (c *Client) GetBranch(ctx context.Context, owner, repo, branch string) (*Branch, error) {
 	var b Branch
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/branches/%s", owner, repo, branch), nil, &b)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/branches/%s", owner, repo, branch), nil, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +72,7 @@ type CreateBranchOptions struct {
 
 func (c *Client) CreateBranch(ctx context.Context, owner, repo string, opts CreateBranchOptions) (*Branch, error) {
 	var b Branch
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/branches", owner, repo), opts, &b)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/branches", owner, repo), opts, &b)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +80,7 @@ func (c *Client) CreateBranch(ctx context.Context, owner, repo string, opts Crea
 }
 
 func (c *Client) DeleteBranch(ctx context.Context, owner, repo, branch string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/branches/%s", owner, repo, branch), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/branches/%s", owner, repo, branch), nil, nil)
 }
 
 type ListBranchProtectionOptions struct {
@@ -89,7 +88,7 @@ type ListBranchProtectionOptions struct {
 }
 
 func (c *Client) DeleteBranchProtection(ctx context.Context, owner, repo, name string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/branches/%s/setting", owner, repo, name), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/branches/%s/setting", owner, repo, name), nil, nil)
 }
 
 type CommitComparison struct {
@@ -102,7 +101,7 @@ type CommitComparison struct {
 
 func (c *Client) CompareCommits(ctx context.Context, owner, repo, base, head string) (*CommitComparison, error) {
 	var cmp CommitComparison
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/compare/%s...%s", owner, repo, base, head), nil, &cmp)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/compare/%s...%s", owner, repo, base, head), nil, &cmp)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +110,7 @@ func (c *Client) CompareCommits(ctx context.Context, owner, repo, base, head str
 
 func (c *Client) GetCommit(ctx context.Context, owner, repo, sha string) (*Commit, error) {
 	var commit Commit
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/commits/%s", owner, repo, sha), nil, &commit)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/commits/%s", owner, repo, sha), nil, &commit)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +136,7 @@ func (c *Client) ListCommits(ctx context.Context, owner, repo string, opts ListC
 	if opts.Until != "" {
 		query += "&until=" + opts.Until
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/commits?%s", owner, repo, query), nil, &commits)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/commits?%s", owner, repo, query), nil, &commits)
 	if err != nil {
 		return nil, err
 	}
@@ -150,5 +149,5 @@ type UpdateBranchProtectionOptions struct {
 }
 
 func (c *Client) UpdateBranchProtection(ctx context.Context, owner, repo, wildcard string, opts UpdateBranchProtectionOptions) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/branches/%s/setting", owner, repo, wildcard), opts, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/branches/%s/setting", owner, repo, wildcard), opts, nil)
 }

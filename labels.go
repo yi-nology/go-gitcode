@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -13,7 +12,7 @@ type UpdateLabelOptions struct {
 
 func (c *Client) UpdateIssueLabel(ctx context.Context, owner, repo, originalName string, opts UpdateLabelOptions) (*Label, error) {
 	var label Label
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s/labels/%s", owner, repo, originalName), opts, &label)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/repos/%s/%s/labels/%s", owner, repo, originalName), opts, &label)
 	if err != nil {
 		return nil, err
 	}
@@ -21,9 +20,9 @@ func (c *Client) UpdateIssueLabel(ctx context.Context, owner, repo, originalName
 }
 
 func (c *Client) ReplaceIssueLabels(ctx context.Context, owner, repo string, number int, labels []string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/issues/%d/labels", owner, repo, number), labels, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/issues/%d/labels", owner, repo, number), labels, nil)
 }
 
 func (c *Client) RemoveAllIssueLabels(ctx context.Context, owner, repo string, number int) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/issues/%d/labels", owner, repo, number), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/issues/%d/labels", owner, repo, number), nil, nil)
 }

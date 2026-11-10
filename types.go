@@ -185,7 +185,7 @@ func (c *Client) ListOrganizations(ctx context.Context) ([]*Organization, error)
 
 func (c *Client) GetOrganization(ctx context.Context, org string) (*Organization, error) {
 	var o Organization
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s", org), nil, &o)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s", org), nil, &o)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +194,7 @@ func (c *Client) GetOrganization(ctx context.Context, org string) (*Organization
 
 func (c *Client) ListOrganizationMembers(ctx context.Context, org string) ([]*Member, error) {
 	var members []*Member
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/members", org), nil, &members)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/members", org), nil, &members)
 	if err != nil {
 		return nil, err
 	}
@@ -211,15 +211,15 @@ func (c *Client) ListNotifications(ctx context.Context) ([]*Notification, error)
 }
 
 func (c *Client) StarRepository(ctx context.Context, owner, repo string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/user/starred/%s/%s", owner, repo), nil, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/user/starred/%s/%s", owner, repo), nil, nil)
 }
 
 func (c *Client) UnstarRepository(ctx context.Context, owner, repo string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/user/starred/%s/%s", owner, repo), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/user/starred/%s/%s", owner, repo), nil, nil)
 }
 
 func (c *Client) IsRepositoryStarred(ctx context.Context, owner, repo string) (bool, error) {
-	_, err := c.doRawRequest(ctx, http.MethodGet, fmt.Sprintf("/user/starred/%s/%s", owner, repo))
+	_, err := c.doRawRequest(ctx, http.MethodGet, pathf("/user/starred/%s/%s", owner, repo))
 	if err != nil {
 		if strings.Contains(err.Error(), "404") {
 			return false, nil

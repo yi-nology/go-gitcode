@@ -2,8 +2,8 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -36,7 +36,7 @@ type CreateSSHKeyOptions struct {
 
 func (c *Client) ListSSHKeys(ctx context.Context, opts ListOptions) ([]*SSHKey, error) {
 	var keys []*SSHKey
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/keys?%s", opts.toQuery()), nil, &keys)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/keys?%s", opts.toQuery()), nil, &keys)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (c *Client) ListSSHKeys(ctx context.Context, opts ListOptions) ([]*SSHKey, 
 
 func (c *Client) GetSSHKey(ctx context.Context, id int64) (*SSHKey, error) {
 	var key SSHKey
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/keys/%d", id), nil, &key)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/keys/%d", id), nil, &key)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (c *Client) CreateSSHKey(ctx context.Context, opts CreateSSHKeyOptions) (*S
 }
 
 func (c *Client) DeleteSSHKey(ctx context.Context, id int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/user/keys/%d", id), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/user/keys/%d", id), nil, nil)
 }
 
 type UserEvent struct {
@@ -91,19 +91,16 @@ type UserEventsResponse struct {
 
 func (c *Client) GetUserEvents(ctx context.Context, username, year, next string) (*UserEventsResponse, error) {
 	var resp UserEventsResponse
-	query := ""
+	q := url.Values{}
 	if year != "" {
-		query += "year=" + year
+		q.Set("year", year)
 	}
 	if next != "" {
-		if query != "" {
-			query += "&"
-		}
-		query += "next=" + next
+		q.Set("next", next)
 	}
-	path := fmt.Sprintf("/users/%s/events", username)
-	if query != "" {
-		path += "?" + query
+	path := pathf("/users/%s/events", username)
+	if len(q) > 0 {
+		path += "?" + q.Encode()
 	}
 	err := c.doRequest(ctx, http.MethodGet, path, nil, &resp)
 	if err != nil {
@@ -122,12 +119,12 @@ func (c *Client) ListStarredRepositories(ctx context.Context, opts ListStarredRe
 	var repos []*Repository
 	query := opts.toQuery()
 	if opts.Sort != "" {
-		query += "&sort=" + opts.Sort
+		query += "&sort=" + url.QueryEscape(opts.Sort)
 	}
 	if opts.Direction != "" {
-		query += "&direction=" + opts.Direction
+		query += "&direction=" + url.QueryEscape(opts.Direction)
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/starred?%s", query), nil, &repos)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/starred?%s", query), nil, &repos)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +141,7 @@ type Namespace struct {
 
 func (c *Client) GetNamespace(ctx context.Context, path string) (*Namespace, error) {
 	var ns Namespace
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/namespace?path=%s", path), nil, &ns)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/namespace?path=%s", url.QueryEscape(path)), nil, &ns)
 	if err != nil {
 		return nil, err
 	}

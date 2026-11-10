@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -28,7 +27,7 @@ type PRMergeTemplate struct {
 // GET /repos/{owner}/{repo}/issue_templates
 func (c *Client) ListIssueTemplates(ctx context.Context, owner, repo string) ([]*IssueTemplate, error) {
 	var templates []*IssueTemplate
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issue_templates", owner, repo), nil, &templates)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issue_templates", owner, repo), nil, &templates)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +39,7 @@ func (c *Client) ListIssueTemplates(ctx context.Context, owner, repo string) ([]
 // GET /repos/{owner}/{repo}/issue_templates/{name}
 func (c *Client) GetIssueTemplate(ctx context.Context, owner, repo, name string) (*IssueTemplate, error) {
 	var template IssueTemplate
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/issue_templates/%s", owner, repo, name), nil, &template)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/issue_templates/%s", owner, repo, name), nil, &template)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +51,7 @@ func (c *Client) GetIssueTemplate(ctx context.Context, owner, repo, name string)
 // GET /repos/{owner}/{repo}/merge_templates
 func (c *Client) ListPullRequestMergeTemplates(ctx context.Context, owner, repo string) ([]*PRMergeTemplate, error) {
 	var templates []*PRMergeTemplate
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/merge_templates", owner, repo), nil, &templates)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/merge_templates", owner, repo), nil, &templates)
 	if err != nil {
 		return nil, err
 	}

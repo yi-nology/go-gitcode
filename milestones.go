@@ -28,7 +28,7 @@ func (c *Client) ListMilestonesWithOptions(ctx context.Context, owner, repo stri
 	if opts.Direction != "" {
 		q.Set("direction", opts.Direction)
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/milestones?%s", owner, repo, q.Encode()), nil, &milestones)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/milestones?%s", owner, repo, q.Encode()), nil, &milestones)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (c *Client) ListMilestonesWithOptions(ctx context.Context, owner, repo stri
 
 func (c *Client) GetMilestone(ctx context.Context, owner, repo string, number int) (*Milestone, error) {
 	var milestone Milestone
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/milestones/%d", owner, repo, number), nil, &milestone)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/milestones/%d", owner, repo, number), nil, &milestone)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ type UpdateMilestoneOptions struct {
 
 func (c *Client) UpdateMilestone(ctx context.Context, owner, repo string, number int, opts UpdateMilestoneOptions) (*Milestone, error) {
 	var milestone Milestone
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s/milestones/%d", owner, repo, number), opts, &milestone)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/repos/%s/%s/milestones/%d", owner, repo, number), opts, &milestone)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ type CreateMilestoneOptions struct {
 
 func (c *Client) CreateMilestoneWithOptions(ctx context.Context, owner, repo string, opts CreateMilestoneOptions) (*Milestone, error) {
 	var milestone Milestone
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/milestones", owner, repo), opts, &milestone)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/milestones", owner, repo), opts, &milestone)
 	if err != nil {
 		return nil, err
 	}

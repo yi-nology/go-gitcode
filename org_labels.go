@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -39,7 +38,7 @@ type UpdateOrgLabelOptions struct {
 // GET /orgs/{org}/labels
 func (c *Client) ListOrgLabels(ctx context.Context, org string, opts ListOptions) ([]*OrgLabel, error) {
 	var labels []*OrgLabel
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/labels?%s", org, opts.toQuery()), nil, &labels)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/labels?%s", org, opts.toQuery()), nil, &labels)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +50,7 @@ func (c *Client) ListOrgLabels(ctx context.Context, org string, opts ListOptions
 // GET /orgs/{org}/labels/{id}
 func (c *Client) GetOrgLabel(ctx context.Context, org string, labelID int64) (*OrgLabel, error) {
 	var label OrgLabel
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/labels/%d", org, labelID), nil, &label)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/labels/%d", org, labelID), nil, &label)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +62,7 @@ func (c *Client) GetOrgLabel(ctx context.Context, org string, labelID int64) (*O
 // POST /orgs/{org}/labels
 func (c *Client) CreateOrgLabel(ctx context.Context, org string, opts CreateOrgLabelOptions) (*OrgLabel, error) {
 	var label OrgLabel
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/orgs/%s/labels", org), opts, &label)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/orgs/%s/labels", org), opts, &label)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +74,7 @@ func (c *Client) CreateOrgLabel(ctx context.Context, org string, opts CreateOrgL
 // PATCH /orgs/{org}/labels/{id}
 func (c *Client) UpdateOrgLabel(ctx context.Context, org string, labelID int64, opts UpdateOrgLabelOptions) (*OrgLabel, error) {
 	var label OrgLabel
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/orgs/%s/labels/%d", org, labelID), opts, &label)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/orgs/%s/labels/%d", org, labelID), opts, &label)
 	if err != nil {
 		return nil, err
 	}
@@ -86,5 +85,5 @@ func (c *Client) UpdateOrgLabel(ctx context.Context, org string, labelID int64, 
 //
 // DELETE /orgs/{org}/labels/{id}
 func (c *Client) DeleteOrgLabel(ctx context.Context, org string, labelID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/orgs/%s/labels/%d", org, labelID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/orgs/%s/labels/%d", org, labelID), nil, nil)
 }

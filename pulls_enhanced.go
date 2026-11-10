@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -13,14 +12,14 @@ import (
 //
 // POST /repos/{owner}/{repo}/pulls/{number}/linked-issues
 func (c *Client) LinkPullRequestIssue(ctx context.Context, owner, repo string, number int, issueNumber int) error {
-	return c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/pulls/%d/linked-issues", owner, repo, number), map[string]int{"issue_number": issueNumber}, nil)
+	return c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/pulls/%d/linked-issues", owner, repo, number), map[string]int{"issue_number": issueNumber}, nil)
 }
 
 // UnlinkPullRequestIssue removes an issue link from a pull request.
 //
 // DELETE /repos/{owner}/{repo}/pulls/{number}/issues
 func (c *Client) UnlinkPullRequestIssue(ctx context.Context, owner, repo string, number int, issueNumber int) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/pulls/%d/issues?issue_number=%d", owner, repo, number, issueNumber), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/pulls/%d/issues?issue_number=%d", owner, repo, number, issueNumber), nil, nil)
 }
 
 // --- PR Tester Management ---
@@ -29,7 +28,7 @@ func (c *Client) UnlinkPullRequestIssue(ctx context.Context, owner, repo string,
 //
 // DELETE /repos/{owner}/{repo}/pulls/{number}/testers
 func (c *Client) UnassignPullRequestTesters(ctx context.Context, owner, repo string, number int, testers string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/pulls/%d/testers?testers=%s", owner, repo, number, testers), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/pulls/%d/testers?testers=%s", owner, repo, number, testers), nil, nil)
 }
 
 // ListPullRequestAvailableTesters lists users available as testers for a pull request.
@@ -37,7 +36,7 @@ func (c *Client) UnassignPullRequestTesters(ctx context.Context, owner, repo str
 // GET /repos/{owner}/{repo}/pulls/{number}/option-approval-testers
 func (c *Client) ListPullRequestAvailableTesters(ctx context.Context, owner, repo string, number int, opts ListOptions) ([]*User, error) {
 	var users []*User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/pulls/%d/option-approval-testers?%s", owner, repo, number, opts.toQuery()), nil, &users)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/pulls/%d/option-approval-testers?%s", owner, repo, number, opts.toQuery()), nil, &users)
 	if err != nil {
 		return nil, err
 	}
@@ -50,14 +49,14 @@ func (c *Client) ListPullRequestAvailableTesters(ctx context.Context, owner, rep
 //
 // POST /repos/{owner}/{repo}/pulls/{number}/approval-reviewers
 func (c *Client) AssignPullRequestApprovalReviewers(ctx context.Context, owner, repo string, number int, reviewers string) error {
-	return c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/pulls/%d/approval-reviewers", owner, repo, number), map[string]string{"reviewers": reviewers}, nil)
+	return c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/pulls/%d/approval-reviewers", owner, repo, number), map[string]string{"reviewers": reviewers}, nil)
 }
 
 // UnassignPullRequestApprovalReviewers removes approval reviewers from a pull request.
 //
 // DELETE /repos/{owner}/{repo}/pulls/{number}/approval-reviewers
 func (c *Client) UnassignPullRequestApprovalReviewers(ctx context.Context, owner, repo string, number int, reviewers string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/pulls/%d/approval-reviewers?reviewers=%s", owner, repo, number, reviewers), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/pulls/%d/approval-reviewers?reviewers=%s", owner, repo, number, reviewers), nil, nil)
 }
 
 // ListPullRequestAvailableReviewers lists users available as approval reviewers for a pull request.
@@ -65,7 +64,7 @@ func (c *Client) UnassignPullRequestApprovalReviewers(ctx context.Context, owner
 // GET /repos/{owner}/{repo}/pulls/{number}/option-approval-reviewers
 func (c *Client) ListPullRequestAvailableReviewers(ctx context.Context, owner, repo string, number int, opts ListOptions) ([]*User, error) {
 	var users []*User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/pulls/%d/option-approval-reviewers?%s", owner, repo, number, opts.toQuery()), nil, &users)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/pulls/%d/option-approval-reviewers?%s", owner, repo, number, opts.toQuery()), nil, &users)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +89,7 @@ type PRDiscussionComment struct {
 // POST /repos/{owner}/{repo}/pulls/{number}/discussions/{discussions_id}/comments
 func (c *Client) ReplyPullRequestComment(ctx context.Context, owner, repo string, number int, discussionID string, body string) (*PRDiscussionComment, error) {
 	var comment PRDiscussionComment
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/pulls/%d/discussions/%s/comments", owner, repo, number, discussionID), map[string]string{"body": body}, &comment)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/pulls/%d/discussions/%s/comments", owner, repo, number, discussionID), map[string]string{"body": body}, &comment)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +100,7 @@ func (c *Client) ReplyPullRequestComment(ctx context.Context, owner, repo string
 //
 // PUT /repos/{owner}/{repo}/pulls/{number}/comments/discussions/{id}
 func (c *Client) ResolvePullRequestDiscussion(ctx context.Context, owner, repo string, number int, discussionID string, resolved bool) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/pulls/%d/comments/discussions/%s", owner, repo, number, discussionID), map[string]bool{"resolved": resolved}, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/pulls/%d/comments/discussions/%s", owner, repo, number, discussionID), map[string]bool{"resolved": resolved}, nil)
 }
 
 // --- PR Modify History ---
@@ -111,7 +110,7 @@ func (c *Client) ResolvePullRequestDiscussion(ctx context.Context, owner, repo s
 // GET /repos/{owner}/{repo}/pulls/{number}/modify-history
 func (c *Client) ListPullRequestModifyHistory(ctx context.Context, owner, repo string, number int, opts ListOptions) ([]*ModifyHistoryEntry, error) {
 	var history []*ModifyHistoryEntry
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/pulls/%d/modify-history?%s", owner, repo, number, opts.toQuery()), nil, &history)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/pulls/%d/modify-history?%s", owner, repo, number, opts.toQuery()), nil, &history)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +122,7 @@ func (c *Client) ListPullRequestModifyHistory(ctx context.Context, owner, repo s
 // GET /repos/{owner}/{repo}/pulls/comment/{comment_id}/modify-history
 func (c *Client) ListPullRequestCommentModifyHistory(ctx context.Context, owner, repo string, commentID int64, opts ListOptions) ([]*ModifyHistoryEntry, error) {
 	var history []*ModifyHistoryEntry
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/pulls/comment/%d/modify-history?%s", owner, repo, commentID, opts.toQuery()), nil, &history)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/pulls/comment/%d/modify-history?%s", owner, repo, commentID, opts.toQuery()), nil, &history)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +136,7 @@ func (c *Client) ListPullRequestCommentModifyHistory(ctx context.Context, owner,
 // GET /repos/{owner}/{repo}/pulls/{number}/user-reactions
 func (c *Client) ListPullRequestUserReactions(ctx context.Context, owner, repo string, number int, opts ListOptions) ([]*IssueUserReaction, error) {
 	var reactions []*IssueUserReaction
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/pulls/%d/user-reactions?%s", owner, repo, number, opts.toQuery()), nil, &reactions)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/pulls/%d/user-reactions?%s", owner, repo, number, opts.toQuery()), nil, &reactions)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +148,7 @@ func (c *Client) ListPullRequestUserReactions(ctx context.Context, owner, repo s
 // GET /repos/{owner}/{repo}/pulls/comment/{comment_id}/user-reactions
 func (c *Client) ListPullRequestCommentUserReactions(ctx context.Context, owner, repo string, commentID int64, opts ListOptions) ([]*IssueUserReaction, error) {
 	var reactions []*IssueUserReaction
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/pulls/comment/%d/user-reactions?%s", owner, repo, commentID, opts.toQuery()), nil, &reactions)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/pulls/comment/%d/user-reactions?%s", owner, repo, commentID, opts.toQuery()), nil, &reactions)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +161,7 @@ func (c *Client) ListPullRequestCommentUserReactions(ctx context.Context, owner,
 //
 // POST /repos/{owner}/{repo}/pulls/{number}/refresh-position
 func (c *Client) RefreshPullRequestCommentPosition(ctx context.Context, owner, repo string, number int) error {
-	return c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/pulls/%d/refresh-position", owner, repo, number), nil, nil)
+	return c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/pulls/%d/refresh-position", owner, repo, number), nil, nil)
 }
 
 // --- PR Files JSON ---
@@ -186,7 +185,7 @@ type PullRequestFileChange struct {
 // GET /repos/{owner}/{repo}/pulls/{number}/files.json
 func (c *Client) ListPullRequestFilesJSON(ctx context.Context, owner, repo string, number int, opts ListOptions) ([]*PullRequestFileChange, error) {
 	var files []*PullRequestFileChange
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/pulls/%d/files.json?%s", owner, repo, number, opts.toQuery()), nil, &files)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/pulls/%d/files.json?%s", owner, repo, number, opts.toQuery()), nil, &files)
 	if err != nil {
 		return nil, err
 	}

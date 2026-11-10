@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -54,7 +53,7 @@ type TeamMember struct {
 // GET /orgs/{org}/teams
 func (c *Client) ListOrgTeams(ctx context.Context, org string, opts ListOptions) ([]*Team, error) {
 	var teams []*Team
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/teams?%s", org, opts.toQuery()), nil, &teams)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/teams?%s", org, opts.toQuery()), nil, &teams)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +65,7 @@ func (c *Client) ListOrgTeams(ctx context.Context, org string, opts ListOptions)
 // GET /teams/{team_id}
 func (c *Client) GetTeam(ctx context.Context, teamID int64) (*Team, error) {
 	var team Team
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/teams/%d", teamID), nil, &team)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/teams/%d", teamID), nil, &team)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +77,7 @@ func (c *Client) GetTeam(ctx context.Context, teamID int64) (*Team, error) {
 // POST /orgs/{org}/teams
 func (c *Client) CreateTeam(ctx context.Context, org string, opts CreateTeamOptions) (*Team, error) {
 	var team Team
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/orgs/%s/teams", org), opts, &team)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/orgs/%s/teams", org), opts, &team)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +89,7 @@ func (c *Client) CreateTeam(ctx context.Context, org string, opts CreateTeamOpti
 // PATCH /teams/{team_id}
 func (c *Client) UpdateTeam(ctx context.Context, teamID int64, opts UpdateTeamOptions) (*Team, error) {
 	var team Team
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/teams/%d", teamID), opts, &team)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/teams/%d", teamID), opts, &team)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +100,7 @@ func (c *Client) UpdateTeam(ctx context.Context, teamID int64, opts UpdateTeamOp
 //
 // DELETE /teams/{team_id}
 func (c *Client) DeleteTeam(ctx context.Context, teamID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/teams/%d", teamID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/teams/%d", teamID), nil, nil)
 }
 
 // ListTeamMembers lists all members of a team.
@@ -109,7 +108,7 @@ func (c *Client) DeleteTeam(ctx context.Context, teamID int64) error {
 // GET /teams/{team_id}/members
 func (c *Client) ListTeamMembers(ctx context.Context, teamID int64, opts ListOptions) ([]*TeamMember, error) {
 	var members []*TeamMember
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/teams/%d/members?%s", teamID, opts.toQuery()), nil, &members)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/teams/%d/members?%s", teamID, opts.toQuery()), nil, &members)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +120,7 @@ func (c *Client) ListTeamMembers(ctx context.Context, teamID int64, opts ListOpt
 // GET /teams/{team_id}/members/{username}
 func (c *Client) GetTeamMember(ctx context.Context, teamID int64, username string) (*User, error) {
 	var user User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/teams/%d/members/%s", teamID, username), nil, &user)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/teams/%d/members/%s", teamID, username), nil, &user)
 	if err != nil {
 		return nil, err
 	}
@@ -132,14 +131,14 @@ func (c *Client) GetTeamMember(ctx context.Context, teamID int64, username strin
 //
 // PUT /teams/{team_id}/members/{username}
 func (c *Client) AddTeamMember(ctx context.Context, teamID int64, username string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/teams/%d/members/%s", teamID, username), nil, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/teams/%d/members/%s", teamID, username), nil, nil)
 }
 
 // RemoveTeamMember removes a member from a team.
 //
 // DELETE /teams/{team_id}/members/{username}
 func (c *Client) RemoveTeamMember(ctx context.Context, teamID int64, username string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/teams/%d/members/%s", teamID, username), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/teams/%d/members/%s", teamID, username), nil, nil)
 }
 
 // ListTeamRepositories lists all repositories of a team.
@@ -147,7 +146,7 @@ func (c *Client) RemoveTeamMember(ctx context.Context, teamID int64, username st
 // GET /teams/{team_id}/repos
 func (c *Client) ListTeamRepositories(ctx context.Context, teamID int64, opts ListOptions) ([]*Repository, error) {
 	var repos []*Repository
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/teams/%d/repos?%s", teamID, opts.toQuery()), nil, &repos)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/teams/%d/repos?%s", teamID, opts.toQuery()), nil, &repos)
 	if err != nil {
 		return nil, err
 	}
@@ -158,12 +157,12 @@ func (c *Client) ListTeamRepositories(ctx context.Context, teamID int64, opts Li
 //
 // PUT /teams/{team_id}/repos/{org}/{repo}
 func (c *Client) AddTeamRepository(ctx context.Context, teamID int64, org, repo string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/teams/%d/repos/%s/%s", teamID, org, repo), nil, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/teams/%d/repos/%s/%s", teamID, org, repo), nil, nil)
 }
 
 // RemoveTeamRepository removes a repository from a team.
 //
 // DELETE /teams/{team_id}/repos/{org}/{repo}
 func (c *Client) RemoveTeamRepository(ctx context.Context, teamID int64, org, repo string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/teams/%d/repos/%s/%s", teamID, org, repo), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/teams/%d/repos/%s/%s", teamID, org, repo), nil, nil)
 }

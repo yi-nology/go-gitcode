@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -11,7 +10,7 @@ import (
 // GET /orgs/{org}/public_members
 func (c *Client) ListOrgPublicMembers(ctx context.Context, org string, opts ListOptions) ([]*User, error) {
 	var users []*User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/public_members?%s", org, opts.toQuery()), nil, &users)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/public_members?%s", org, opts.toQuery()), nil, &users)
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +21,7 @@ func (c *Client) ListOrgPublicMembers(ctx context.Context, org string, opts List
 //
 // GET /orgs/{org}/public_members/{username}
 func (c *Client) IsOrgPublicMember(ctx context.Context, org, username string) (bool, error) {
-	_, err := c.doRawRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/public_members/%s", org, username))
+	_, err := c.doRawRequest(ctx, http.MethodGet, pathf("/orgs/%s/public_members/%s", org, username))
 	if err != nil {
 		if isNotFoundError(err) {
 			return false, nil
@@ -36,14 +35,14 @@ func (c *Client) IsOrgPublicMember(ctx context.Context, org, username string) (b
 //
 // PUT /orgs/{org}/public_members/{username}
 func (c *Client) PublicizeOrgMembership(ctx context.Context, org, username string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/orgs/%s/public_members/%s", org, username), nil, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/orgs/%s/public_members/%s", org, username), nil, nil)
 }
 
 // ConcealOrgMembership makes the authenticated user's membership private.
 //
 // DELETE /orgs/{org}/public_members/{username}
 func (c *Client) ConcealOrgMembership(ctx context.Context, org, username string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/orgs/%s/public_members/%s", org, username), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/orgs/%s/public_members/%s", org, username), nil, nil)
 }
 
 // ListOrgBlockedUsers lists all blocked users of an organization.
@@ -51,7 +50,7 @@ func (c *Client) ConcealOrgMembership(ctx context.Context, org, username string)
 // GET /orgs/{org}/blocks
 func (c *Client) ListOrgBlockedUsers(ctx context.Context, org string, opts ListOptions) ([]*User, error) {
 	var users []*User
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/blocks?%s", org, opts.toQuery()), nil, &users)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/blocks?%s", org, opts.toQuery()), nil, &users)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +61,7 @@ func (c *Client) ListOrgBlockedUsers(ctx context.Context, org string, opts ListO
 //
 // GET /orgs/{org}/blocks/{username}
 func (c *Client) IsOrgBlockedUser(ctx context.Context, org, username string) (bool, error) {
-	_, err := c.doRawRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/blocks/%s", org, username))
+	_, err := c.doRawRequest(ctx, http.MethodGet, pathf("/orgs/%s/blocks/%s", org, username))
 	if err != nil {
 		if isNotFoundError(err) {
 			return false, nil
@@ -76,14 +75,14 @@ func (c *Client) IsOrgBlockedUser(ctx context.Context, org, username string) (bo
 //
 // PUT /orgs/{org}/blocks/{username}
 func (c *Client) BlockOrgUser(ctx context.Context, org, username string) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/orgs/%s/blocks/%s", org, username), nil, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/orgs/%s/blocks/%s", org, username), nil, nil)
 }
 
 // UnblockOrgUser unblocks a user from an organization.
 //
 // DELETE /orgs/{org}/blocks/{username}
 func (c *Client) UnblockOrgUser(ctx context.Context, org, username string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/orgs/%s/blocks/%s", org, username), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/orgs/%s/blocks/%s", org, username), nil, nil)
 }
 
 // CreateOrganization creates a new organization.
@@ -113,5 +112,5 @@ type CreateOrgOptions struct {
 //
 // DELETE /orgs/{org}
 func (c *Client) DeleteOrganization(ctx context.Context, org string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/orgs/%s", org), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/orgs/%s", org), nil, nil)
 }

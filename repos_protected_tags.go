@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -33,7 +32,7 @@ type UpdateProtectedTagOptions struct {
 // GET /repos/{owner}/{repo}/protected-tags
 func (c *Client) ListProtectedTags(ctx context.Context, owner, repo string, opts ListOptions) ([]*ProtectedTag, error) {
 	var tags []*ProtectedTag
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/protected-tags?%s", owner, repo, opts.toQuery()), nil, &tags)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/protected-tags?%s", owner, repo, opts.toQuery()), nil, &tags)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +44,7 @@ func (c *Client) ListProtectedTags(ctx context.Context, owner, repo string, opts
 // GET /repos/{owner}/{repo}/protected-tags/{tag}
 func (c *Client) GetProtectedTag(ctx context.Context, owner, repo, tag string) (*ProtectedTag, error) {
 	var pt ProtectedTag
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/protected-tags/%s", owner, repo, tag), nil, &pt)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/protected-tags/%s", owner, repo, tag), nil, &pt)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +56,7 @@ func (c *Client) GetProtectedTag(ctx context.Context, owner, repo, tag string) (
 // POST /repos/{owner}/{repo}/protected-tags
 func (c *Client) CreateProtectedTag(ctx context.Context, owner, repo string, opts CreateProtectedTagOptions) (*ProtectedTag, error) {
 	var pt ProtectedTag
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/protected-tags", owner, repo), opts, &pt)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/protected-tags", owner, repo), opts, &pt)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +68,7 @@ func (c *Client) CreateProtectedTag(ctx context.Context, owner, repo string, opt
 // PUT /repos/{owner}/{repo}/protected-tags/{tag}
 func (c *Client) UpdateProtectedTag(ctx context.Context, owner, repo, tag string, opts UpdateProtectedTagOptions) (*ProtectedTag, error) {
 	var pt ProtectedTag
-	err := c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/protected-tags/%s", owner, repo, tag), opts, &pt)
+	err := c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/protected-tags/%s", owner, repo, tag), opts, &pt)
 	if err != nil {
 		return nil, err
 	}
@@ -80,5 +79,5 @@ func (c *Client) UpdateProtectedTag(ctx context.Context, owner, repo, tag string
 //
 // DELETE /repos/{owner}/{repo}/protected-tags/{tag}
 func (c *Client) DeleteProtectedTag(ctx context.Context, owner, repo, tag string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/protected-tags/%s", owner, repo, tag), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/protected-tags/%s", owner, repo, tag), nil, nil)
 }

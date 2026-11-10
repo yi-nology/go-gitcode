@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -59,7 +58,7 @@ func (c *Client) ListNotificationsWithOptions(ctx context.Context, opts ListNoti
 	if opts.Status != "" {
 		query += "&status=" + opts.Status
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/notifications?%s", query), nil, &notifications)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/notifications?%s", query), nil, &notifications)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +70,7 @@ func (c *Client) ListNotificationsWithOptions(ctx context.Context, opts ListNoti
 // GET /notifications/threads/{id}
 func (c *Client) GetNotificationThread(ctx context.Context, threadID int64) (*NotificationThread, error) {
 	var thread NotificationThread
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/notifications/threads/%d", threadID), nil, &thread)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/notifications/threads/%d", threadID), nil, &thread)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +81,7 @@ func (c *Client) GetNotificationThread(ctx context.Context, threadID int64) (*No
 //
 // PATCH /notifications/threads/{id}
 func (c *Client) MarkNotificationThreadAsRead(ctx context.Context, threadID int64) error {
-	return c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/notifications/threads/%d", threadID), nil, nil)
+	return c.doRequest(ctx, http.MethodPatch, pathf("/notifications/threads/%d", threadID), nil, nil)
 }
 
 // MarkNotificationsAsRead marks all notifications as read.
@@ -110,7 +109,7 @@ func (c *Client) ListRepoNotifications(ctx context.Context, owner, repo string, 
 	if opts.Status != "" {
 		query += "&status=" + opts.Status
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/notifications?%s", owner, repo, query), nil, &notifications)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/notifications?%s", owner, repo, query), nil, &notifications)
 	if err != nil {
 		return nil, err
 	}
@@ -121,5 +120,5 @@ func (c *Client) ListRepoNotifications(ctx context.Context, owner, repo string, 
 //
 // PUT /repos/{owner}/{repo}/notifications
 func (c *Client) MarkRepoNotificationsAsRead(ctx context.Context, owner, repo string, opts MarkNotificationsOptions) error {
-	return c.doRequest(ctx, http.MethodPut, fmt.Sprintf("/repos/%s/%s/notifications", owner, repo), opts, nil)
+	return c.doRequest(ctx, http.MethodPut, pathf("/repos/%s/%s/notifications", owner, repo), opts, nil)
 }

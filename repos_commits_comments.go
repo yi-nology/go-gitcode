@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -40,7 +39,7 @@ type UpdateCommitCommentOptions struct {
 // GET /repos/{owner}/{repo}/commits/{sha}/comments
 func (c *Client) ListCommitComments(ctx context.Context, owner, repo, sha string, opts ListOptions) ([]*CommitComment, error) {
 	var comments []*CommitComment
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/commits/%s/comments?%s", owner, repo, sha, opts.toQuery()), nil, &comments)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/commits/%s/comments?%s", owner, repo, sha, opts.toQuery()), nil, &comments)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +51,7 @@ func (c *Client) ListCommitComments(ctx context.Context, owner, repo, sha string
 // GET /repos/{owner}/{repo}/comments
 func (c *Client) ListRepoCommitComments(ctx context.Context, owner, repo string, opts ListOptions) ([]*CommitComment, error) {
 	var comments []*CommitComment
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/comments?%s", owner, repo, opts.toQuery()), nil, &comments)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/comments?%s", owner, repo, opts.toQuery()), nil, &comments)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +63,7 @@ func (c *Client) ListRepoCommitComments(ctx context.Context, owner, repo string,
 // GET /repos/{owner}/{repo}/comments/{id}
 func (c *Client) GetCommitComment(ctx context.Context, owner, repo string, commentID int64) (*CommitComment, error) {
 	var comment CommitComment
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/comments/%d", owner, repo, commentID), nil, &comment)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/comments/%d", owner, repo, commentID), nil, &comment)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +75,7 @@ func (c *Client) GetCommitComment(ctx context.Context, owner, repo string, comme
 // POST /repos/{owner}/{repo}/commits/{sha}/comments
 func (c *Client) CreateCommitComment(ctx context.Context, owner, repo, sha string, opts CreateCommitCommentOptions) (*CommitComment, error) {
 	var comment CommitComment
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/commits/%s/comments", owner, repo, sha), opts, &comment)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/commits/%s/comments", owner, repo, sha), opts, &comment)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +87,7 @@ func (c *Client) CreateCommitComment(ctx context.Context, owner, repo, sha strin
 // PATCH /repos/{owner}/{repo}/comments/{id}
 func (c *Client) UpdateCommitComment(ctx context.Context, owner, repo string, commentID int64, opts UpdateCommitCommentOptions) (*CommitComment, error) {
 	var comment CommitComment
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s/comments/%d", owner, repo, commentID), opts, &comment)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/repos/%s/%s/comments/%d", owner, repo, commentID), opts, &comment)
 	if err != nil {
 		return nil, err
 	}
@@ -99,5 +98,5 @@ func (c *Client) UpdateCommitComment(ctx context.Context, owner, repo string, co
 //
 // DELETE /repos/{owner}/{repo}/comments/{id}
 func (c *Client) DeleteCommitComment(ctx context.Context, owner, repo string, commentID int64) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/comments/%d", owner, repo, commentID), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/comments/%d", owner, repo, commentID), nil, nil)
 }

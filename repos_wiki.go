@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
@@ -38,7 +37,7 @@ type UpdateWikiPageOptions struct {
 // GET /repos/{owner}/{repo}/wiki/pages
 func (c *Client) ListWikiPages(ctx context.Context, owner, repo string, opts ListOptions) ([]*WikiPage, error) {
 	var pages []*WikiPage
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/wiki/pages?%s", owner, repo, opts.toQuery()), nil, &pages)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/wiki/pages?%s", owner, repo, opts.toQuery()), nil, &pages)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +49,7 @@ func (c *Client) ListWikiPages(ctx context.Context, owner, repo string, opts Lis
 // GET /repos/{owner}/{repo}/wiki/page/{pageName}
 func (c *Client) GetWikiPage(ctx context.Context, owner, repo, pageName string) (*WikiPage, error) {
 	var page WikiPage
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/wiki/page/%s", owner, repo, pageName), nil, &page)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/wiki/page/%s", owner, repo, pageName), nil, &page)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +61,7 @@ func (c *Client) GetWikiPage(ctx context.Context, owner, repo, pageName string) 
 // POST /repos/{owner}/{repo}/wiki/new
 func (c *Client) CreateWikiPage(ctx context.Context, owner, repo string, opts CreateWikiPageOptions) (*WikiPage, error) {
 	var page WikiPage
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/wiki/new", owner, repo), opts, &page)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/wiki/new", owner, repo), opts, &page)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +73,7 @@ func (c *Client) CreateWikiPage(ctx context.Context, owner, repo string, opts Cr
 // PATCH /repos/{owner}/{repo}/wiki/page/{pageName}
 func (c *Client) UpdateWikiPage(ctx context.Context, owner, repo, pageName string, opts UpdateWikiPageOptions) (*WikiPage, error) {
 	var page WikiPage
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/repos/%s/%s/wiki/page/%s", owner, repo, pageName), opts, &page)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/repos/%s/%s/wiki/page/%s", owner, repo, pageName), opts, &page)
 	if err != nil {
 		return nil, err
 	}
@@ -85,5 +84,5 @@ func (c *Client) UpdateWikiPage(ctx context.Context, owner, repo, pageName strin
 //
 // DELETE /repos/{owner}/{repo}/wiki/page/{pageName}
 func (c *Client) DeleteWikiPage(ctx context.Context, owner, repo, pageName string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/wiki/page/%s", owner, repo, pageName), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/repos/%s/%s/wiki/page/%s", owner, repo, pageName), nil, nil)
 }

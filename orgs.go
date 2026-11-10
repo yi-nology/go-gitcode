@@ -2,13 +2,12 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
 func (c *Client) ListUserOrganizations(ctx context.Context, username string, opts ListOptions) ([]*Organization, error) {
 	var orgs []*Organization
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/users/%s/orgs?%s", username, opts.toQuery()), nil, &orgs)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/users/%s/orgs?%s", username, opts.toQuery()), nil, &orgs)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +20,7 @@ func (c *Client) ListOrganizationsWithOptions(ctx context.Context, admin bool, o
 	if admin {
 		query += "&admin=true"
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/users/orgs?%s", query), nil, &orgs)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/users/orgs?%s", query), nil, &orgs)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +38,7 @@ type OrgMemberDetail struct {
 
 func (c *Client) GetOrgMemberDetail(ctx context.Context, org, username string) (*OrgMemberDetail, error) {
 	var detail OrgMemberDetail
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/members/%s", org, username), nil, &detail)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/members/%s", org, username), nil, &detail)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +47,7 @@ func (c *Client) GetOrgMemberDetail(ctx context.Context, org, username string) (
 
 func (c *Client) GetOrgInfo(ctx context.Context, org string) (*Organization, error) {
 	var o Organization
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s", org), nil, &o)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s", org), nil, &o)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +64,7 @@ type UpdateOrgOptions struct {
 
 func (c *Client) UpdateOrganization(ctx context.Context, org string, opts UpdateOrgOptions) (*Organization, error) {
 	var o Organization
-	err := c.doRequest(ctx, http.MethodPatch, fmt.Sprintf("/orgs/%s", org), opts, &o)
+	err := c.doRequest(ctx, http.MethodPatch, pathf("/orgs/%s", org), opts, &o)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +78,7 @@ type InviteMemberOptions struct {
 
 func (c *Client) InviteOrgMember(ctx context.Context, org, username string, opts InviteMemberOptions) (*User, error) {
 	var user User
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/orgs/%s/memberships/%s", org, username), opts, &user)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/orgs/%s/memberships/%s", org, username), opts, &user)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +86,7 @@ func (c *Client) InviteOrgMember(ctx context.Context, org, username string, opts
 }
 
 func (c *Client) RemoveOrgMember(ctx context.Context, org, username string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/orgs/%s/memberships/%s", org, username), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/orgs/%s/memberships/%s", org, username), nil, nil)
 }
 
 type OrgFollowers struct {
@@ -100,7 +99,7 @@ type OrgFollowers struct {
 
 func (c *Client) ListOrgFollowers(ctx context.Context, org string, opts ListOptions) ([]*OrgFollowers, error) {
 	var followers []*OrgFollowers
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/followers?%s", org, opts.toQuery()), nil, &followers)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/followers?%s", org, opts.toQuery()), nil, &followers)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +122,7 @@ func (c *Client) ListOrgMembers(ctx context.Context, org, role string, opts List
 	if role != "" {
 		query += "&role=" + role
 	}
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/members?%s", org, query), nil, &members)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/members?%s", org, query), nil, &members)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +147,7 @@ type UserMembership struct {
 
 func (c *Client) GetUserMembership(ctx context.Context, org string) (*UserMembership, error) {
 	var membership UserMembership
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/user/memberships/orgs/%s", org), nil, &membership)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/user/memberships/orgs/%s", org), nil, &membership)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +155,7 @@ func (c *Client) GetUserMembership(ctx context.Context, org string) (*UserMember
 }
 
 func (c *Client) ExitOrganization(ctx context.Context, org string) error {
-	return c.doRequest(ctx, http.MethodDelete, fmt.Sprintf("/user/memberships/orgs/%s", org), nil, nil)
+	return c.doRequest(ctx, http.MethodDelete, pathf("/user/memberships/orgs/%s", org), nil, nil)
 }
 
 type IssueExtendSetting struct {
@@ -173,7 +172,7 @@ type IssueExtendSetting struct {
 
 func (c *Client) GetOrgIssueExtendSettings(ctx context.Context, org string) ([]*IssueExtendSetting, error) {
 	var settings []*IssueExtendSetting
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/issue/extend/settings", org), nil, &settings)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/orgs/%s/issue/extend/settings", org), nil, &settings)
 	if err != nil {
 		return nil, err
 	}

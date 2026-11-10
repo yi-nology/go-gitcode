@@ -2,7 +2,6 @@ package gitcode
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -43,7 +42,7 @@ type CombinedStatus struct {
 // GET /repos/{owner}/{repo}/statuses/{sha}
 func (c *Client) ListCommitStatuses(ctx context.Context, owner, repo, sha string, opts ListOptions) ([]*CommitStatus, error) {
 	var statuses []*CommitStatus
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/statuses/%s?%s", owner, repo, sha, opts.toQuery()), nil, &statuses)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/statuses/%s?%s", owner, repo, sha, opts.toQuery()), nil, &statuses)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +54,7 @@ func (c *Client) ListCommitStatuses(ctx context.Context, owner, repo, sha string
 // POST /repos/{owner}/{repo}/statuses/{sha}
 func (c *Client) CreateCommitStatus(ctx context.Context, owner, repo, sha string, opts CreateCommitStatusOptions) (*CommitStatus, error) {
 	var status CommitStatus
-	err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/statuses/%s", owner, repo, sha), opts, &status)
+	err := c.doRequest(ctx, http.MethodPost, pathf("/repos/%s/%s/statuses/%s", owner, repo, sha), opts, &status)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +66,7 @@ func (c *Client) CreateCommitStatus(ctx context.Context, owner, repo, sha string
 // GET /repos/{owner}/{repo/commits/{sha}/status
 func (c *Client) GetCombinedStatus(ctx context.Context, owner, repo, sha string) (*CombinedStatus, error) {
 	var status CombinedStatus
-	err := c.doRequest(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/commits/%s/status", owner, repo, sha), nil, &status)
+	err := c.doRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/commits/%s/status", owner, repo, sha), nil, &status)
 	if err != nil {
 		return nil, err
 	}

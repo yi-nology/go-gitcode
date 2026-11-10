@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -99,7 +98,10 @@ func (o *OAuthClient) doTokenRequest(ctx context.Context, data url.Values) (*OAu
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	// Token responses are tiny JSON documents; read them with the same
+	// bounded reader as the API client so a hostile token endpoint cannot
+	// trigger unbounded allocation (issue #7).
+	body, err := readBodyLimited(resp.Body, defaultMaxJSONBodyBytes)
 	if err != nil {
 		return nil, err
 	}

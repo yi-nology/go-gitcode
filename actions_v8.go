@@ -25,7 +25,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -76,7 +75,7 @@ type ListWorkflowsResponse struct {
 // GET /v8/repos/{owner}/{repo}/actions/workflows (page/per_page).
 func (c *Client) ListActionWorkflows(ctx context.Context, owner, repo string, opts ListOptions) (*ListWorkflowsResponse, error) {
 	var resp ListWorkflowsResponse
-	err := c.doRequestAt(ctx, c.v8BaseURL(), http.MethodGet, fmt.Sprintf("/repos/%s/%s/actions/workflows?%s", owner, repo, opts.toQuery()), nil, &resp)
+	err := c.doRequestAt(ctx, c.v8BaseURL(), http.MethodGet, pathf("/repos/%s/%s/actions/workflows?%s", owner, repo, opts.toQuery()), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +106,7 @@ func (c *Client) DispatchActionWorkflow(ctx context.Context, owner, repo, workfl
 		opts.Inputs = map[string]string{}
 	}
 	var resp DispatchActionWorkflowResult
-	err := c.doV8Request(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/actions/workflows/%s/dispatches", owner, repo, workflowID), opts, &resp)
+	err := c.doV8Request(ctx, http.MethodPost, pathf("/repos/%s/%s/actions/workflows/%s/dispatches", owner, repo, workflowID), opts, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +142,7 @@ type WorkflowValidation struct {
 func (c *Client) ValidateActionWorkflowYAML(ctx context.Context, owner, repo string, yamlContent []byte) (*WorkflowValidation, error) {
 	body := map[string]string{"base64_content": base64.StdEncoding.EncodeToString(yamlContent)}
 	var resp WorkflowValidation
-	err := c.doV8Request(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/actions/workflows/validate", owner, repo), body, &resp)
+	err := c.doV8Request(ctx, http.MethodPost, pathf("/repos/%s/%s/actions/workflows/validate", owner, repo), body, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -226,7 +225,7 @@ type ListWorkflowRunsResponse struct {
 // GET /v8/repos/{owner}/{repo}/actions/runs.
 func (c *Client) ListActionRuns(ctx context.Context, owner, repo string, opts ListWorkflowRunsOptions) (*ListWorkflowRunsResponse, error) {
 	var resp ListWorkflowRunsResponse
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/actions/runs?%s", owner, repo, opts.toQuery()), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/repos/%s/%s/actions/runs?%s", owner, repo, opts.toQuery()), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +366,7 @@ type WorkflowRunDetail struct {
 // GET /v8/repos/{owner}/{repo}/actions/runs/{run_id}.
 func (c *Client) GetActionRun(ctx context.Context, owner, repo, runID string) (*WorkflowRunDetail, error) {
 	var resp WorkflowRunDetail
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/actions/runs/%s", owner, repo, runID), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/repos/%s/%s/actions/runs/%s", owner, repo, runID), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -384,7 +383,7 @@ type stopRetryRerunResult struct {
 // POST /v8/repos/{owner}/{repo}/actions/runs/{run_id}/stop → {success}.
 func (c *Client) StopActionRun(ctx context.Context, owner, repo, runID string) (bool, error) {
 	var resp stopRetryRerunResult
-	err := c.doV8Request(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/actions/runs/%s/stop", owner, repo, runID), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodPost, pathf("/repos/%s/%s/actions/runs/%s/stop", owner, repo, runID), nil, &resp)
 	return resp.Success, err
 }
 
@@ -393,7 +392,7 @@ func (c *Client) StopActionRun(ctx context.Context, owner, repo, runID string) (
 // POST /v8/repos/{owner}/{repo}/actions/runs/{run_id}/retry → {success}.
 func (c *Client) RetryActionRun(ctx context.Context, owner, repo, runID string) (bool, error) {
 	var resp stopRetryRerunResult
-	err := c.doV8Request(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/actions/runs/%s/retry", owner, repo, runID), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodPost, pathf("/repos/%s/%s/actions/runs/%s/retry", owner, repo, runID), nil, &resp)
 	return resp.Success, err
 }
 
@@ -402,7 +401,7 @@ func (c *Client) RetryActionRun(ctx context.Context, owner, repo, runID string) 
 // POST /v8/repos/{owner}/{repo}/actions/runs/{run_id}/rerun → {success}.
 func (c *Client) RerunActionRun(ctx context.Context, owner, repo, runID string) (bool, error) {
 	var resp stopRetryRerunResult
-	err := c.doV8Request(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/actions/runs/%s/rerun", owner, repo, runID), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodPost, pathf("/repos/%s/%s/actions/runs/%s/rerun", owner, repo, runID), nil, &resp)
 	return resp.Success, err
 }
 
@@ -418,7 +417,7 @@ type ListActionJobsResponse struct {
 // GET /v8/repos/{owner}/{repo}/actions/runs/{run_id}/jobs.
 func (c *Client) ListActionRunJobs(ctx context.Context, owner, repo, runID string) (*ListActionJobsResponse, error) {
 	var resp ListActionJobsResponse
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/actions/runs/%s/jobs", owner, repo, runID), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/repos/%s/%s/actions/runs/%s/jobs", owner, repo, runID), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -431,7 +430,7 @@ func (c *Client) ListActionRunJobs(ctx context.Context, owner, repo, runID strin
 // GET /v8/repos/{owner}/{repo}/actions/runs/{run_id}/jobs/{job_id}.
 func (c *Client) GetActionJob(ctx context.Context, owner, repo, runID, jobID string) (*ActionJob, error) {
 	var job ActionJob
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/actions/runs/%s/jobs/%s", owner, repo, runID, jobID), nil, &job)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/repos/%s/%s/actions/runs/%s/jobs/%s", owner, repo, runID, jobID), nil, &job)
 	if err != nil {
 		return nil, err
 	}
@@ -462,7 +461,7 @@ type ActionJobLogs struct {
 // POST /v8/repos/{owner}/{repo}/actions/runs/{run_id}/jobs/{job_id}/logs.
 func (c *Client) GetActionJobLogs(ctx context.Context, owner, repo, runID, jobID string, opts GetActionJobLogsOptions) (*ActionJobLogs, error) {
 	var resp ActionJobLogs
-	err := c.doV8Request(ctx, http.MethodPost, fmt.Sprintf("/repos/%s/%s/actions/runs/%s/jobs/%s/logs", owner, repo, runID, jobID), opts, &resp)
+	err := c.doV8Request(ctx, http.MethodPost, pathf("/repos/%s/%s/actions/runs/%s/jobs/%s/logs", owner, repo, runID, jobID), opts, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -474,7 +473,7 @@ func (c *Client) GetActionJobLogs(ctx context.Context, owner, repo, runID, jobID
 // GET /v8/repos/{owner}/{repo}/actions/runs/{run_id}/jobs/{job_id}/download-log.
 func (c *Client) DownloadActionJobLogs(ctx context.Context, owner, repo, runID, jobID string) ([]byte, error) {
 	return c.doRawRequestAt(ctx, c.v8BaseURL(), http.MethodGet,
-		fmt.Sprintf("/repos/%s/%s/actions/runs/%s/jobs/%s/download-log", owner, repo, runID, jobID))
+		pathf("/repos/%s/%s/actions/runs/%s/jobs/%s/download-log", owner, repo, runID, jobID))
 }
 
 // --- Artifacts ---
@@ -525,7 +524,7 @@ type ListActionArtifactsResponse struct {
 // GET /v8/repos/{owner}/{repo}/actions/artifacts.
 func (c *Client) ListActionArtifacts(ctx context.Context, owner, repo string, opts ListActionArtifactsOptions) (*ListActionArtifactsResponse, error) {
 	var resp ListActionArtifactsResponse
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/actions/artifacts?%s", owner, repo, opts.toQuery()), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/repos/%s/%s/actions/artifacts?%s", owner, repo, opts.toQuery()), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -537,7 +536,7 @@ func (c *Client) ListActionArtifacts(ctx context.Context, owner, repo string, op
 // GET /v8/repos/{owner}/{repo}/actions/runs/{run_id}/artifacts.
 func (c *Client) ListActionRunArtifacts(ctx context.Context, owner, repo, runID string, opts ListOptions) (*ListActionArtifactsResponse, error) {
 	var resp ListActionArtifactsResponse
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/actions/runs/%s/artifacts?%s", owner, repo, runID, opts.toQuery()), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/repos/%s/%s/actions/runs/%s/artifacts?%s", owner, repo, runID, opts.toQuery()), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -549,7 +548,7 @@ func (c *Client) ListActionRunArtifacts(ctx context.Context, owner, repo, runID 
 // GET /v8/repos/{owner}/{repo}/actions/artifacts/{artifact_id}.
 func (c *Client) GetActionArtifact(ctx context.Context, owner, repo, artifactID string) (*ActionArtifact, error) {
 	var artifact ActionArtifact
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/actions/artifacts/%s", owner, repo, artifactID), nil, &artifact)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/repos/%s/%s/actions/artifacts/%s", owner, repo, artifactID), nil, &artifact)
 	if err != nil {
 		return nil, err
 	}
@@ -560,7 +559,7 @@ func (c *Client) GetActionArtifact(ctx context.Context, owner, repo, artifactID 
 //
 // DELETE /v8/repos/{owner}/{repo}/actions/artifacts/{artifact_id}.
 func (c *Client) DeleteActionArtifact(ctx context.Context, owner, repo, artifactID string) error {
-	return c.doV8Request(ctx, http.MethodDelete, fmt.Sprintf("/repos/%s/%s/actions/artifacts/%s", owner, repo, artifactID), nil, nil)
+	return c.doV8Request(ctx, http.MethodDelete, pathf("/repos/%s/%s/actions/artifacts/%s", owner, repo, artifactID), nil, nil)
 }
 
 // DownloadActionArtifact downloads an artifact archive in format (the
@@ -569,7 +568,7 @@ func (c *Client) DeleteActionArtifact(ctx context.Context, owner, repo, artifact
 // GET /v8/repos/{owner}/{repo}/actions/artifacts/{artifact_id}/{archive_format}.
 func (c *Client) DownloadActionArtifact(ctx context.Context, owner, repo, artifactID, format string) ([]byte, error) {
 	return c.doRawRequestAt(ctx, c.v8BaseURL(), http.MethodGet,
-		fmt.Sprintf("/repos/%s/%s/actions/artifacts/%s/%s", owner, repo, artifactID, format))
+		pathf("/repos/%s/%s/actions/artifacts/%s/%s", owner, repo, artifactID, format))
 }
 
 // --- Runners ---
@@ -620,7 +619,7 @@ type ListActionRunnersResponse struct {
 // GET /v8/repos/{owner}/{repo}/actions/runners.
 func (c *Client) ListRepoActionRunners(ctx context.Context, owner, repo string, opts ListActionRunnersOptions) (*ListActionRunnersResponse, error) {
 	var resp ListActionRunnersResponse
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/actions/runners?%s", owner, repo, opts.toQuery()), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/repos/%s/%s/actions/runners?%s", owner, repo, opts.toQuery()), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -633,7 +632,7 @@ func (c *Client) ListRepoActionRunners(ctx context.Context, owner, repo string, 
 // envelopes mirror the repo host-runners shape.
 func (c *Client) listRepoRunnersVariant(ctx context.Context, owner, repo, suffix string, opts ListActionRunnersOptions) (*ListActionRunnersResponse, error) {
 	var resp ListActionRunnersResponse
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/repos/%s/%s/actions/%s?%s", owner, repo, suffix, opts.toQuery()), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/repos/%s/%s/actions/%s?%s", owner, repo, suffix, opts.toQuery()), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -684,7 +683,7 @@ type ListOrgRunnerGroupsResponse struct {
 // GET /v8/orgs/{org}/actions/runner-groups.
 func (c *Client) ListOrgActionRunnerGroups(ctx context.Context, org string, opts ListActionRunnersOptions) (*ListOrgRunnerGroupsResponse, error) {
 	var resp ListOrgRunnerGroupsResponse
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/actions/runner-groups?%s", org, opts.toQuery()), nil, &resp)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/orgs/%s/actions/runner-groups?%s", org, opts.toQuery()), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -696,7 +695,7 @@ func (c *Client) ListOrgActionRunnerGroups(ctx context.Context, org string, opts
 // GET /v8/orgs/{org}/actions/runner-groups/{group_id}.
 func (c *Client) GetActionRunnerGroup(ctx context.Context, org, groupID string) (*ActionRunnerGroup, error) {
 	var group ActionRunnerGroup
-	err := c.doV8Request(ctx, http.MethodGet, fmt.Sprintf("/orgs/%s/actions/runner-groups/%s", org, groupID), nil, &group)
+	err := c.doV8Request(ctx, http.MethodGet, pathf("/orgs/%s/actions/runner-groups/%s", org, groupID), nil, &group)
 	if err != nil {
 		return nil, err
 	}
