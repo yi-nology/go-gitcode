@@ -72,7 +72,7 @@ const (
 
 // maxRetryAfterSeconds bounds delay-seconds before the Duration conversion
 // so a huge Retry-After cannot overflow time.Duration.
-const maxRetryAfterSeconds = int64(math.MaxInt64 / int64(time.Second))
+const maxRetryAfterSeconds = math.MaxInt64 / int64(time.Second)
 
 // retryAfterDuration parses the Retry-After header (issue #4). It accepts
 // both RFC 9110 forms — delay-seconds and HTTP-date — and applies three
