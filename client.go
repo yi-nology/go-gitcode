@@ -383,28 +383,24 @@ func (c *Client) doRawBodyRequest(ctx context.Context, method, path string, body
 	return c.doBufferedRequestAt(ctx, base, method, path, "application/json", raw, result, c.jsonBodyLimit())
 }
 
-// isNotFoundError checks if an error is a 404 Not Found response.
+// isNotFoundError reports whether err is a 404 Not Found response, judged
+// structurally (issue #12): a typed *NotFoundError (everything newAPIError
+// maps a 404 to) or any *APIError carrying a 404 status code. The old
+// string fallback — err.Error() containing the substring "404" — is gone:
+// the APIError message embeds the request path and the response body, so a
+// 403/429/500 on a route named "org404" (or a 500 whose body mentions 404)
+// used to masquerade as Not Found and the boolean probes swallowed the
+// real error. 判定只走 HTTP 状态码，与 CHANGELOG 宣传的结构化错误模型一致。
 func isNotFoundError(err error) bool {
 	if err == nil {
 		return false
 	}
-	if IsNotFound(err) {
+	var nf *NotFoundError
+	if errors.As(err, &nf) {
 		return true
 	}
-	return contains(err.Error(), "404")
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && searchString(s, substr)
-}
-
-func searchString(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
+	var apiErr *APIError
+	return errors.As(err, &apiErr) && apiErr.StatusCode == http.StatusNotFound
 }
 
 // User represents a GitCode user.

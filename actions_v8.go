@@ -25,6 +25,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -254,9 +255,14 @@ var ErrActionRunNotFound = errors.New("gitcode: no action run matched head_sha")
 //
 // Pass every documented filter that fits your intent — Branch plus Status
 // for a CI-failure diagnosis, for instance — to keep the scan short; an
-// unpruned scan walks the repo's whole run history (capped at
-// maxFindRunPages pages, then it returns the last error of exhaustion).
-// Not-found surfaces as ErrActionRunNotFound (errors.Is).
+// unpruned scan walks the repo's whole run history. The scan is bounded at
+// maxFindRunPages pages of 100: a short page ends the walk — no hit in it
+// means no hit anywhere, surfaced as ErrActionRunNotFound (errors.Is).
+// Hitting the cap while pages keep coming back full means the target run
+// may exist beyond the scanned window — that surfaces as an error wrapping
+// ErrTooManyPages（与 Paginate 同一哨兵，issue #5 的纪律）：
+// 「截断」与「真的没有」可区分（issue #13），不再共用
+// ErrActionRunNotFound 出口把截断谎报成不存在。
 func (c *Client) FindActionRunByHeadSHA(ctx context.Context, owner, repo, sha string, prune ListWorkflowRunsOptions) (*WorkflowRun, error) {
 	if sha == "" {
 		return nil, errors.New("gitcode: head sha is required")
@@ -275,10 +281,14 @@ func (c *Client) FindActionRunByHeadSHA(ctx context.Context, owner, repo, sha st
 		}
 		// Short page ⇒ last page; no hit in it means no hit anywhere.
 		if len(resp.WorkflowRuns) < 100 {
-			break
+			return nil, ErrActionRunNotFound
 		}
 	}
-	return nil, ErrActionRunNotFound
+	// 循环跑满且每一页都是满页：扫描触顶——目标运行可能落在窗口之外，
+	// 返回 ErrActionRunNotFound 会把「没扫到」谎报成「没有这条流水线」
+	// （issue #13；同一仓的 Paginate 在完全相同的场景 yield ErrTooManyPages）。
+	return nil, fmt.Errorf("%w after %d pages of %d items (head_sha scan truncated; absence cannot be claimed)",
+		ErrTooManyPages, maxFindRunPages, 100)
 }
 
 // WorkflowRunDetail is a run with its full stage → job → step tree. Pre

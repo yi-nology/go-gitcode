@@ -221,7 +221,7 @@ func (c *Client) UnstarRepository(ctx context.Context, owner, repo string) error
 func (c *Client) IsRepositoryStarred(ctx context.Context, owner, repo string) (bool, error) {
 	_, err := c.doRawRequest(ctx, http.MethodGet, pathf("/user/starred/%s/%s", owner, repo))
 	if err != nil {
-		if strings.Contains(err.Error(), "404") {
+		if isNotFoundError(err) {
 			return false, nil
 		}
 		return false, err

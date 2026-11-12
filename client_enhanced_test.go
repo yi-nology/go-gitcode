@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -157,7 +158,7 @@ func TestRequestHookError(t *testing.T) {
 		t.Fatal("expected error from hook")
 	}
 
-	if !contains(err.Error(), "hook rejected request") {
+	if !strings.Contains(err.Error(), "hook rejected request") {
 		t.Errorf("expected hook error, got: %v", err)
 	}
 }
