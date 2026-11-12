@@ -237,7 +237,7 @@ func TestSweepY4_RetryPolicyMultiplierDefault(t *testing.T) {
 			t.Fatalf("retry %d gap: unset=%v explicit=%v — should match the documented 2.0 default", i+1, unset[i], explicit[i])
 		}
 	}
-	if !(unset[1] > unset[0]) {
+	if unset[1] <= unset[0] {
 		t.Fatalf("backoff must grow exponentially: %v vs %v", unset[0], unset[1])
 	}
 
