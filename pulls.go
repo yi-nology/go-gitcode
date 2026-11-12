@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -215,7 +214,7 @@ func (c *Client) MergePullRequest(ctx context.Context, owner, repo string, numbe
 func (c *Client) IsPullRequestMerged(ctx context.Context, owner, repo string, number int) (bool, error) {
 	_, err := c.doRawRequest(ctx, http.MethodGet, pathf("/repos/%s/%s/pulls/%d/merge", owner, repo, number))
 	if err != nil {
-		if strings.Contains(err.Error(), "404") {
+		if isNotFoundError(err) {
 			return false, nil
 		}
 		return false, err

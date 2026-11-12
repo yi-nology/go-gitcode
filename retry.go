@@ -62,12 +62,16 @@ func (c *Client) shouldRetry(statusCode int) bool {
 	return false
 }
 
-// defaultInitialBackoff / defaultMaxBackoff fill in the documented defaults
-// when a custom policy leaves the corresponding field unset (issue #4: a
-// zero MaxBackoff used to clamp every wait to 0).
+// defaultInitialBackoff / defaultMaxBackoff / defaultMultiplier fill in the
+// documented defaults when a custom policy leaves the corresponding field
+// unset (issue #4: a zero MaxBackoff used to clamp every wait to 0;
+// issue #14: a zero Multiplier made math.Pow(0, n>0) = 0 — every retry
+// after the first had zero backoff, the busy-wait pathology #4 fixed
+// re-entering through another path).
 const (
 	defaultInitialBackoff = 1 * time.Second
 	defaultMaxBackoff     = 30 * time.Second
+	defaultMultiplier     = 2.0
 )
 
 // maxRetryAfterSeconds bounds delay-seconds before the Duration conversion
@@ -130,6 +134,10 @@ func (c *Client) getRetryWaitTime(attempt int, resp *http.Response) time.Duratio
 	if maxBackoff <= 0 {
 		maxBackoff = defaultMaxBackoff
 	}
+	multiplier := policy.Multiplier
+	if multiplier <= 0 {
+		multiplier = defaultMultiplier // 1.0（恒定退避）是合法显式选择，仅归一未填的零值
+	}
 
 	// Check Retry-After header first (for 429 responses): a valid
 	// server-provided delay wins over the exponential curve, but shares
@@ -139,7 +147,7 @@ func (c *Client) getRetryWaitTime(attempt int, resp *http.Response) time.Duratio
 	}
 
 	// Exponential backoff
-	backoff := time.Duration(float64(initial) * math.Pow(policy.Multiplier, float64(attempt)))
+	backoff := time.Duration(float64(initial) * math.Pow(multiplier, float64(attempt)))
 	return min(backoff, maxBackoff)
 }
 
