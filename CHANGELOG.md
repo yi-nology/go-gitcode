@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.17.0] - 2026-11-13
+### Fixed
+- **404 判定结构化分流（issue #12）**：`isNotFoundError` 此前用字符串匹配
+  `err.Error()` 是否含 "404"——403/500/网络错误被误判为「不存在」，7 个公开
+  布尔探针方法静默吞掉真错误。改 `errors.As(*NotFoundError)` +
+  `errors.As(*APIError)` 比对 HTTP 状态码；手写 contains/searchString 删除。
+- **FindActionRunByHeadSHA 扫描触顶（issue #13）**：触顶且末页仍满页时返回
+  包装 `ErrTooManyPages` 的错误（与 Paginate 的 #5 纪律同哨兵）——「被截断」
+  不再被当成「没有这条流水线」。
+- **RetryPolicy.Multiplier 零值归一（issue #14）**：自定义策略漏填时第 2 次
+  起退避为 0（文档缺省 2.0 未落地）——`getRetryWaitTime` 补零值归一
+  `defaultMultiplier=2.0`；Multiplier=1.0 恒定退避是合法显式选择不归一。
+
+
 ## [v0.16.0] - 2026-11-11
 ### Fixed
 - **Retry-After 三道闸（issue #4）**：`getRetryWaitTime` 的 `Retry-After`
