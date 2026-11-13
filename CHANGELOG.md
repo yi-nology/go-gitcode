@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.18.0] - 2026-11-13
+### Removed
+- **`NewClientFromOAuthToken` 兼容构造（BREAKING）**：Deprecated 包级构造固定公网
+  base URL，私有部署丢 URL 的坑已由 `OAuthClient.NewClient`（沿用 OAuthClient 的
+  base URL）修复；旧构造仓内零消费（仅示例注释提及），删除收口。**下游要做什么**：
+  `gitcode.NewClientFromOAuthToken(token)` → `oauth.NewClient(token)`
+  （先 `NewOAuthClient(...)`/`NewOAuthClientWithBaseURL(...)` 拿到 oauth 客户端；
+  私有部署必须用后者，否则客户端指向公网）。examples 注释同步改指新构造。
+
+
 ## [v0.17.0] - 2026-11-13
 ### Fixed
 - **404 判定结构化分流（issue #12）**：`isNotFoundError` 此前用字符串匹配
