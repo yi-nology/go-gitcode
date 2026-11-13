@@ -159,8 +159,8 @@ func main() {
 	// token, err := oauth.ExchangeToken(ctx, code)
 	// if err != nil { log.Fatal(err) }
 
-	// 3. 用 token 创建客户端
-	// client := gitcode.NewClientFromOAuthToken(token)
+	// 3. 用 token 创建客户端（沿用 OAuthClient 的 base URL，私有部署正确）
+	// client := oauth.NewClient(token)
 
 	// 4. 刷新 token
 	// token, err = oauth.RefreshToken(ctx, token.RefreshToken)

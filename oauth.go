@@ -122,9 +122,3 @@ func (o *OAuthClient) doTokenRequest(ctx context.Context, data url.Values) (*OAu
 func (o *OAuthClient) NewClient(token *OAuthToken) *Client {
 	return NewClientWithBaseURL(o.baseURL+"/api/v5", token.AccessToken)
 }
-
-// Deprecated: NewClientFromOAuthToken creates a client from an OAuth token using the default public base URL.
-// For private deployments, use OAuthClient.NewClient() instead, which preserves the base URL.
-func NewClientFromOAuthToken(token *OAuthToken) *Client {
-	return NewClient(token.AccessToken)
-}
